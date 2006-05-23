@@ -1,0 +1,14 @@
+=YM4R
+The goal of YM4R is to ease the use of all the Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+
+===Operations
+At this time, only the Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported.
+
+===Disclaimer
+This software is not endorsed in any way by Yahoo!.
+
+===License
+YM4R is released under the MIT license.
+
+===Support
+Any questions, enhancement proposals, bug notifications or corrections can be sent to mailto:guilhem.vellut+ym4r@gmail.com.
