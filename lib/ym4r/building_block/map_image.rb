@@ -7,8 +7,6 @@ module Ym4r
   module BuildingBlock
     module MapImage
       #Send a request to the Map image API. Gets back a url to an image. This image can be downloaded later.
-      #Raise a RateLimitExceededException if the limit of 50000 requests in 24 hours from the same IP is exceeded.
-      #Raise a ConnectionException if the service is unreachable.
       def self.get(param)
         unless param.has_key?(:street) or
             param.has_key?(:city) or
@@ -38,7 +36,7 @@ module Ym4r
           xml = open(URI.encode(url)).read
         rescue OpenURI::HTTPError => error
           raise Ym4r::BadRequestException.new(error.to_s)
-        rescue SystemCallError
+        rescue
           raise Ym4r::ConnectionException.new("Unable to connect to Yahoo! Maps Map Image service")
         end
         
@@ -55,7 +53,8 @@ module Ym4r
           
       #Contains a result match from the Yahoo! Maps Map Image service. 
       class Result < Struct.new(:warning,:url)
-      
+        
+        #Downloads the image to +file+.
         def download_to(file)
           data = open(url).read
           open(file,"wb") do |f|
@@ -63,6 +62,7 @@ module Ym4r
           end
         end
         
+        #Indicates if the location passed in the request could be exactly identified.
         def exact_match?
           warning.nil?
         end

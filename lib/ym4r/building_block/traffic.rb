@@ -7,8 +7,6 @@ module Ym4r
   module BuildingBlock
     module Traffic
       #Send a request to the traffic REST API. 
-      #Raise a RateLimitExceededException if the limit of 5000 requests in 24 hours from the same IP is exceeded.
-      #Raise a ConnectionException if the service is unreachable.
       def self.get(param)
         unless param.has_key?(:street) or
             param.has_key?(:city) or
@@ -40,7 +38,7 @@ module Ym4r
           xml = open(URI.encode(url)).read
         rescue OpenURI::HTTPError => error
           raise Ym4r::BadRequestException.new(error.to_s)
-        rescue SystemCallError
+        rescue
           raise Ym4r::ConnectionException.new("Unable to connect to Yahoo! Maps Traffic REST service")
         end
         
@@ -80,6 +78,7 @@ module Ym4r
           @warning = warning
         end
         
+        #Indicates if the location passed in the request could be exactly identified.
         def exact_match?
           warning.nil?
         end
@@ -88,6 +87,7 @@ module Ym4r
       #Contains a result from the Yahoo! Maps Traffic REST service. 
       class Result < Struct.new(:type,:title,:description,:latitude,:longitude,:direction,:severity,:report_date,:update_date,:end_date,:image_url)
         
+        #Downloads the image (if there is one) to +file+.
         def download_to(file)
           if has_image?
             data = open(image_url).read
@@ -101,10 +101,12 @@ module Ym4r
           ! image_url.nil?
         end
         
+        #Convenience method for the lazy.
         def lonlat
           [longitude,latitude]
         end
         
+        #Convenience method for the lazy.
         def latlon
           [latitude,longitude]
         end

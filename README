@@ -2,7 +2,53 @@
 The goal of YM4R is to ease the use of all the Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ===Operations
-At this time, only the Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported.
+At this time, only the Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
+
+To know what parameters to pass to the +get+ methods and what results you should expect, you should consult the documentation for the building block API's on YahoooOooOoooOoo!'s website : http://developer.yahoo.com/maps/index.html#mapsBuildingBlocks . 
+
+Here are some examples and notes about using the different Building Block API's.
+====Geocoding
+Here is an example of request:
+	require 'ym4r'
+	include Ym4r::BuildingBlock
+	results = Geocoding::get(:street => "1 Infinite Loop",
+                             	  :city => "Cupertino",
+                                  :state => "CA",
+                                  :zip => "95014")
++results+ is an array of Geocoding::Result objects. The API can return up to 50 results for one request. Read the documentation page of the Geocoding::Result class to know how to access the data.
+
+====Map Image
+Here is an example of request:
+	require 'ym4r'
+	include Ym4r::BuildingBlock
+	result = MapImage::get(:street => "1 Infinite Loop",
+                               :city => "Cupertino",
+                               :state => "CA",
+                               :zip => "95014",
+                               :image_type => "png")
++result+ is a MapImage::Result object contains the URL for the requested image. You can download this image to a file by calling +download_to+ and passing a path.
+
+====Traffic
+Here is an example of request:
+	require 'ym4r'
+	include Ym4r::BuildingBlock
+	results = Traffic::get(:street => "1 Infinite Loop",
+                               :city => "Cupertino",
+                               :state => "CA",
+                               :zip => "95014",
+                               :include_map => true)
++results+ is a Traffic::ResultSet object (subclass of +Array+), containing Traffic::Result objects, each containing information about one traffic incident.
+
+====Local Search 
+Here is an example of request:
+	require 'ym4r'
+	include Ym4r::BuildingBlock
+	results = LocalSearch::get(:street => "1 Infinite Loop",
+                                   :city => "Cupertino",
+                                   :state => "CA",
+                                   :zip => "95014",
+                                   :query => "chinese")
++results+ is a LocalSearch::ResultSet object (subclass of +Array+), containing LocalSearch::Result objects, each containing information about one hit on the Yahoo! local search.
 
 ===Disclaimer
 This software is not endorsed in any way by Yahoo!.

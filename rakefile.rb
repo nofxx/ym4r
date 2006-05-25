@@ -25,7 +25,7 @@ spec = Gem::Specification::new do |s|
 
   s.name = 'ym4r'
   s.version = "0.0.1"
-  s.summary = "Using Yahoo Maps API from Ruby"
+  s.summary = "Using the Yahoo Maps API from Ruby"
   s.description = <<EOF
 EOF
   s.author = 'Guilhem Vellut'

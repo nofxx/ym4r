@@ -7,8 +7,6 @@ module Ym4r
   module BuildingBlock
     module Geocoding
       #Sends a request to the Yahoo! Maps geocoding service and returns the result in an easy to use Ruby object, hiding the creation of the query string and the XML parsing of the answer.
-      #Raise a RateLimitExceededException if the limit of 5000 requests in 24 hours from the same IP is exceeded.
-      #Raise a ConnectionException if the service is unreachable.
       def self.get(param)
         unless param.has_key?(:street) or
             param.has_key?(:city) or
@@ -30,7 +28,7 @@ module Ym4r
           xml = open(URI.encode(url)).read
         rescue OpenURI::HTTPError => error
           raise Ym4r::BadRequestException.new(error.to_s)
-        rescue SystemCallError
+        rescue
           raise Ym4r::ConnectionException.new("Unable to connect to Yahoo! Maps Geocoding service")
         end
         
@@ -58,15 +56,18 @@ module Ym4r
     
       #Contains a result match from the Yahoo! Maps geocoding service. 
       class Result < Struct.new(:precision,:warning,:latitude,:longitude,:address,:city,:state,:zip,:country)
-      
+        
+        #Convenience method for the lazy.
         def latlon
           [latitude,longitude]
         end
         
+        #Convenience method for the lazy.
         def lonlat
           [longitude,latitude]
         end
         
+         #Indicates if the location passed in the request could be exactly identified.
         def exact_match?
           warning.nil?
         end

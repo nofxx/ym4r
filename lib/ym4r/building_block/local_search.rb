@@ -7,8 +7,6 @@ module Ym4r
   module BuildingBlock
     module LocalSearch
       #Send a request to the local search REST API V3. 
-      #Raise a RateLimitExceededException if the limit of 5000 requests in 24 hours from the same IP is exceeded.
-      #Raise a ConnectionException if the service is unreachable.
       def self.get(param)
         
         unless param.has_key?(:street) or
@@ -48,7 +46,7 @@ module Ym4r
           json = open(URI.encode(url)).read
         rescue OpenURI::HTTPError => error
           raise Ym4r::BadRequestException.new(error.to_s)
-        rescue SystemCallError
+        rescue 
           raise Ym4r::ConnectionException.new("Unable to connect to Yahoo! Maps  REST service")
         end
         
@@ -129,11 +127,13 @@ module Ym4r
       
       #Contains a result from the Yahoo! Maps Local Search REST service V3. 
       class Result < Struct.new(:id,:title,:address,:city,:state,:phone,:latitude,:longitude,:rating,:distance,:url,:click_url,:map_url,:business_url,:business_click_url,:categories)
-      
+        
+        #convenience method for the lazy
         def lonlat
           [longitude,latitude]
         end
         
+        #convenience method for the lazy
         def latlon
           [latitude,longitude]
         end
