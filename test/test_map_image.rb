@@ -21,11 +21,11 @@ class TestMapImage< Test::Unit::TestCase
   end
 
   def test_no_location
-    assert_raise(Ym4r::MissingParameterException) {MapImage::get(:image_type => "gif")}
+    assert_raise(MissingParameterException) {MapImage::get(:image_type => "gif")}
   end
 
   def test_bad_parameter
-    assert_raise(Ym4r::BadRequestException) do
+    assert_raise(BadRequestException) do
       MapImage::get(:street => "1 Infinite Loop",
                    :city => "Cupertino",
                    :state => "CA",

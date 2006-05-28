@@ -27,11 +27,11 @@ class TestGeocoding< Test::Unit::TestCase
   end
 
   def test_garbage_location
-    assert_raise(Ym4r::BadRequestException) {Geocoding::get(:location => "AZEAEAEAEAEAE")}
+    assert_raise(BadRequestException) {Geocoding::get(:location => "AZEAEAEAEAEAE")}
   end
 
   def test_no_location
-    assert_raise(Ym4r::MissingParameterException) {Geocoding::get(:hello => "world")}
+    assert_raise(MissingParameterException) {Geocoding::get(:hello => "world")}
   end
   
 end

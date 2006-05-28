@@ -1,5 +1,5 @@
 require 'ym4r/app_id'
-require 'ym4r/exception'
+require 'ym4r/building_block/exception'
 require 'open-uri'
 require 'rexml/document'
 
@@ -14,7 +14,7 @@ module Ym4r
             param.has_key?(:zip) or
             param.has_key?(:location) or
             (param.has_key?(:longitude) and param.has_key?(:latitude))
-          raise Ym4r::MissingParameterException.new("Missing location data for the Yahoo! Maps Traffic service")
+          raise MissingParameterException.new("Missing location data for the Yahoo! Maps Traffic service")
         end
 
         url = "http://api.local.yahoo.com/MapsService/V1/trafficData?appid=#{Ym4r::APP_ID}&"
@@ -37,15 +37,15 @@ module Ym4r
         begin
           xml = open(URI.encode(url)).read
         rescue OpenURI::HTTPError => error
-          raise Ym4r::BadRequestException.new(error.to_s)
+          raise BadRequestException.new(error.to_s)
         rescue
-          raise Ym4r::ConnectionException.new("Unable to connect to Yahoo! Maps Traffic REST service")
+          raise ConnectionException.new("Unable to connect to Yahoo! Maps Traffic REST service")
         end
         
         doc = REXML::Document.new(xml) 
         
         if doc.root.name == "Error"
-          raise Ym4r::RateLimitExceededException.new("Rate limit exceeded for Yahoo! Maps Traffic REST service")
+          raise RateLimitExceededException.new("Rate limit exceeded for Yahoo! Maps Traffic REST service")
         else
           results = Traffic::ResultSet.new(Time.at(doc.root.elements['LastUpdateDate'].text.to_i),doc.root.elements['Warning'].nil? ? nil : doc.root.elements['Warning'].text)
           

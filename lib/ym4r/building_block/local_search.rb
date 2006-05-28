@@ -1,5 +1,5 @@
 require 'ym4r/app_id'
-require 'ym4r/exception'
+require 'ym4r/building_block/exception'
 require 'open-uri'
 require 'rexml/document'
 
@@ -15,12 +15,12 @@ module Ym4r
             param.has_key?(:zip) or
             param.has_key?(:location) or
             (param.has_key?(:longitude) and param.has_key?(:latitude))
-          raise Ym4r::MissingParameterException.new("Missing location data for the Yahoo! Maps Local Search service")
+          raise MissingParameterException.new("Missing location data for the Yahoo! Maps Local Search service")
         end
         
         unless param.has_key?(:query) or
             param.has_key?(:listing_id)
-          raise Ym4r::MissingParameterException.new("Missing query data for the Yahoo! Maps Local Search service")
+          raise MissingParameterException.new("Missing query data for the Yahoo! Maps Local Search service")
         end
 
         url = "http://api.local.yahoo.com/LocalSearchService/V3/localSearch?appid=#{Ym4r::APP_ID}&"
@@ -45,16 +45,16 @@ module Ym4r
         begin
           json = open(URI.encode(url)).read
         rescue OpenURI::HTTPError => error
-          raise Ym4r::BadRequestException.new(error.to_s)
+          raise BadRequestException.new(error.to_s)
         rescue 
-          raise Ym4r::ConnectionException.new("Unable to connect to Yahoo! Maps  REST service")
+          raise ConnectionException.new("Unable to connect to Yahoo! Maps  REST service")
         end
         
         #see http://rubyforge.org/snippet/detail.php?type=snippet&id=29. Safe?
         json_obj = eval(json.gsub(/(["'])\s*:\s*(['"0-9tfn\[{])/){"#{$1}=>#{$2}"})
         
         if json_obj.has_key?("Error")
-          raise Ym4r::RateLimitExceededException.new("Rate limit exceeded for Yahoo! Maps Traffic REST service")
+          raise RateLimitExceededException.new("Rate limit exceeded for Yahoo! Maps Traffic REST service")
         else
           json_result_set = json_obj['ResultSet']
 

@@ -40,7 +40,7 @@ class TestLocalSearch< Test::Unit::TestCase
   end
 
   def test_no_query
-    assert_raise(Ym4r::MissingParameterException) do
+    assert_raise(MissingParameterException) do
       LocalSearch::get(:street => "1 Infinite Loop",
                        :city => "Cupertino",
                        :state => "CA",
