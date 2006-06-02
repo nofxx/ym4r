@@ -14,7 +14,7 @@ end
 desc "Generate the documentation"
 Rake::RDocTask::new do |rdoc|
   rdoc.rdoc_dir = 'ym4r-doc/'
-  rdoc.title    = "Yahoo Maps for Ruby Documentation"
+  rdoc.title    = "YM4R Documentation"
   rdoc.options << '--line-numbers' << '--inline-source'
   rdoc.rdoc_files.include('README')
   rdoc.rdoc_files.include('lib/**/*.rb')
@@ -24,8 +24,8 @@ spec = Gem::Specification::new do |s|
   s.platform = Gem::Platform::RUBY
 
   s.name = 'ym4r'
-  s.version = "0.0.1"
-  s.summary = "Using the Yahoo Maps API from Ruby"
+  s.version = "0.1.2"
+  s.summary = "Using Google Maps and Yahoo! Maps from Ruby and Rails"
   s.description = <<EOF
 EOF
   s.author = 'Guilhem Vellut'
@@ -34,7 +34,7 @@ EOF
   
   s.requirements << 'none'
   s.require_path = 'lib'
-  s.files = FileList["lib/**/*.rb", "test/**/*.rb", "README","MIT-LICENSE","rakefile.rb"]
+  s.files = FileList["lib/**/*.rb", "lib/**/*.yml","test/**/*.rb", "README","MIT-LICENSE","rakefile.rb"]
   s.test_files = FileList['test/test*.rb']
 
   s.has_rdoc = true

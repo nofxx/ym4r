@@ -14,7 +14,7 @@ module Ym4r
         @global_init = ""
       end
 
-      def self.header(with_vml = true)
+      def header(with_vml = true)
         a = "<script src=\"http://maps.google.com/maps?file=api&v=2&key=#{API_KEY}\" type=\"text/javascript\"></script>\n"
         a << "<style type=\"text/css\">\n v\:* { behavior:url(#default#VML);}\n</style>" if with_vml
         a
@@ -45,6 +45,10 @@ module Ym4r
         end
       end
 
+      def record_global_init(code)
+        @global_init << code
+      end
+      
       def icon_init(icon , variable)
         @global_init << icon.declare(variable)
       end

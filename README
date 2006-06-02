@@ -1,13 +1,20 @@
 =YM4R
-The goal of YM4R is to ease the use of all the Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+This is YM4R 0.1.2. The goal of YM4R (YM4R Maps For Ruby) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ===Operations
-At this time, only the Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
+====Google Maps
+You can use the library to display maps easily from your rails application. Update through RJS is possible. Check out the tutorial at http://thepochisuperstarmegashow.com/2006/06/02/ym4r-georuby-spatial-adapter-demo/
 
-To know what parameters to pass to the +get+ methods and what results you should expect, you should consult the documentation for the building block API's on YahoooOooOoooOoo!'s website : http://developer.yahoo.com/maps/index.html#mapsBuildingBlocks . 
+====Yahoo Maps
+There is at the moment preliminary support for the JS-Flash Yahoo! Maps API, although it is not very polished. Check back next version!
+
+====Yahoo Maps Building Block API
+Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
+
+To know what parameters to pass to the +get+ methods and what results you should expect, you should consult the documentation for the building block API's on Yahoo!'s website : http://developer.yahoo.com/maps/index.html#mapsBuildingBlocks . 
 
 Here are some examples and notes about using the different Building Block API's.
-====Geocoding
+=====Geocoding
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -17,7 +24,7 @@ Here is an example of request:
                                   :zip => "95014")
 +results+ is an array of Geocoding::Result objects. The API can return up to 50 results for one request. Read the documentation page of the Geocoding::Result class to know how to access the data.
 
-====Map Image
+=====Map Image
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -28,7 +35,7 @@ Here is an example of request:
                                :image_type => "png")
 +result+ is a MapImage::Result object contains the URL for the requested image. You can download this image to a file by calling +download_to+ and passing a path.
 
-====Traffic
+=====Traffic
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -39,7 +46,7 @@ Here is an example of request:
                                :include_map => true)
 +results+ is a Traffic::ResultSet object (subclass of +Array+), containing Traffic::Result objects, each containing information about one traffic incident.
 
-====Local Search 
+=====Local Search 
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -50,8 +57,17 @@ Here is an example of request:
                                    :query => "chinese")
 +results+ is a LocalSearch::ResultSet object (subclass of +Array+), containing LocalSearch::Result objects, each containing information about one hit on the Yahoo! local search.
 
+===Changes since last version
+- Addition of support for the Google Maps API
+- Addition of preliminary support for the Yahoo! Maps JS-Flash API
+
+===TODO
+- Documentation! Documentation! Documentation!
+- Tutorials
+- Finish the support for the Yahoo! Maps JS-Flash API
+
 ===Disclaimer
-This software is not endorsed in any way by Yahoo!.
+This software is not endorsed in any way by Yahoo! or Google.
 
 ===License
 YM4R is released under the MIT license.

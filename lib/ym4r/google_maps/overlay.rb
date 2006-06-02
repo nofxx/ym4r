@@ -43,33 +43,21 @@ module Ym4r
         "new GInfoWindowTab(#{javascriptify_variable(tab)},#{javascriptify_variable(content)})"
       end
     end
-    
-    #not a mapping object. Useful if yo udon't want to pass a different name for each marker.
-    class GMarkerGroup < Array
-      def initialize(markers = [])
-        super(markers)
-      end
-      def declare(variable)
-        decl = ""
-        each_with_index do |marker,i|
-          decl << marker.declare(variable + i.to_s)
-        end
-        decl
-      end
-    end
-    
+        
+    #Icon class. You can pass rubyfied versions of the attributes detailed in the Google Maps API documentation. You can initialize global icons to be used in the application by passing a icon object, along with a variable name, to GMap#icon_init. If you want to declare an icon outside this, you will need to declare it first. 
     class GIcon
       include MappingObject
       DEFAULT = Variable.new("G_DEFAULT_ICON")
       attr_accessor :options, :copy_base
 
+      #Options can contain all the attributes (in rubifiedformat) of an GIconobject (see Google's doc) + :copy_base, which indicates if the icon is copied from another one
       def initialize(options = {})
         @copy_base = options.delete(:copy_base)
         @options = options
       end
       def create
         if @copy_base
-          "new GIcon(@copy_base)"
+          "new GIcon(#{@copy_base.to_javascript})"
         else
           "new GIcon()"
         end
@@ -77,12 +65,13 @@ module Ym4r
       def declare(variable)
         decl = super(variable)
         @options.each do |key,value|
-          decl << "#{variable}.#{key} = #{javascriptify_variable(value)};\n"
+          decl << "#{variable}.#{javascriptify_method(key.to_s)} = #{javascriptify_variable(value)};\n"
         end
         decl
       end
     end
      
+    #A polyline. Can take an array of GLatLng or an array of 2D arrays. A method to build a polyline from a GeoRuby linestring is provided in the helper.rb file.
     class GPolyline
       include MappingObject
       attr_accessor :points,:color,:weight,:opacity
@@ -106,6 +95,7 @@ module Ym4r
       
     end
 
+    #A basic Latitude/longitude point.
     class GLatLng 
       include MappingObject
       attr_accessor :lat,:lng,:unbounded
