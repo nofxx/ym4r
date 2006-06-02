@@ -1,11 +1,3 @@
-require 'ym4r/building_block/geocoding'
-require 'ym4r/building_block/map_image'
-require 'ym4r/building_block/traffic'
-require 'ym4r/building_block/local_search'
+require 'ym4r/yahoo_maps'
+require 'ym4r/google_maps'
 
-require 'ym4r/maps/map'
-require 'ym4r/maps/latlon'
-require 'ym4r/maps/marker'
-require 'ym4r/maps/widget'
-require 'ym4r/maps/tool'
-require 'ym4r/maps/overlay'

@@ -1,0 +1,7 @@
+require 'ym4r/google_maps/mapping'
+require 'ym4r/google_maps/map'
+require 'ym4r/google_maps/control'
+require 'ym4r/google_maps/overlay'
+require 'ym4r/google_maps/point'
+require 'ym4r/google_maps/api_key'
+require 'ym4r/google_maps/helper'

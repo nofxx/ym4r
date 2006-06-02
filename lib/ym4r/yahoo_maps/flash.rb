@@ -1,0 +1,7 @@
+require 'ym4r/yahoo_maps/app_id'
+require 'ym4r/yahoo_maps/flash/mapping'
+require 'ym4r/yahoo_maps/flash/latlon'
+require 'ym4r/yahoo_maps/flash/marker'
+require 'ym4r/yahoo_maps/flash/widget'
+require 'ym4r/yahoo_maps/flash/tool'
+require 'ym4r/yahoo_maps/flash/overlay'

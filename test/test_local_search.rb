@@ -3,7 +3,7 @@ $:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'ym4r'
 require 'test/unit'
 
-include Ym4r::BuildingBlock
+include Ym4r::YahooMaps::BuildingBlock
 
 class TestLocalSearch< Test::Unit::TestCase
 
