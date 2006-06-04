@@ -10,7 +10,7 @@ module Ym4r
         args.collect! do |arg|
           javascriptify_variable(arg)
         end
-        "#{to_javascript}.#{javascriptify_method(name.to_s)}(#{args.join(",")});\n"
+        Variable.new("#{to_javascript}.#{javascriptify_method(name.to_s)}(#{args.join(",")})")
       end
 
       #Transforms a Ruby object into a JavaScript string
@@ -61,11 +61,14 @@ module Ym4r
       end
     end
 
-    #Used to bind a ruby variable to an already existing JavaScript one.
+    #Used to bind a ruby variable to an already existing JavaScript one. IT doesn't have to be a variable in the sense "var variable" but it can be any valid JavaScript expression that has a value.
     class Variable
       include MappingObject
       def initialize(variable)
         @variable = variable
+      end
+      def to_s
+        @variable + ";\n"
       end
     end
   end

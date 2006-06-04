@@ -8,18 +8,29 @@ You can use the library to display Google maps easily with any ruby-based web fr
 - http://thepochisuperstarmegashow.com/2006/06/03/google-maps-yahoo-traffic-mash-up/
 Following is some notes about using the library:
 
+=====Naming conventions
+The names of the Ruby class follow the ones in the JavaScript Google Maps API v2, except for GMap2, which in Ruby code is called simply GMap. To know what is possible to do with each class, you should refer to the documentation available on Google website.
+
+On top of that, you have some convenience methods for initializing the map (in the GMap class). Also, the constructors of some classes accept different types of arguments to be converted later in the correct JavaScript format. For example, the +GMarker+ aclass accepts an array of 2 floats as parameter, in addition of a GLatLng object, to indicate its position. It also facilitates the attribution of an HTML info window, displayed when the user clicks on it, since you can pass to the constructor an options hash with the <tt>:info_window</tt> key and the text to display as the value, instead of having to wire the response to a click event yourself.
+
 =====Binding JavaScript and Ruby
 Since the Google Maps API uses JavaScript to create and manipulate a map, most of what the library does is outputting JavaScript, although some convenience methods are provided to simplify some common operations at initialization time. When you create a YM4R mapping object (a Ruby object which includes the MappingObject module) and call methods on it, these calls are converted by the library into JavaScript code. At initialization time, you can pass arbitrary JavaScript code to the <tt>GMap#record_init</tt> and <tt>GMap#record_global_init</tt>.Then, at update time, if you use Ruby-on-Rails as your web framework, you can update your map through RJS by passing the result of the method calls to the <tt>page.send :record,...</tt> method to have it then interpreted by the browser.
 
 For example, here is a typical initialization sequence for a map
 	@map = GMap.new("map_div")
+	@map.control_init(:large_map => true,:map_type => true)
 	@map.center_zoom_init([35.12313,-110.567],12)
 	@map.record_init @map.add_overlay(GMarker.new([35.12878, -110.578],:title => "Hello!"))
 
-While +center_zoom_init+ is one of the rare convenience methods that do not output JavaScript, the +add_overlay+ does. Actually, if you look at the code of the GMap class, you won't find any +add_overlay+ method, although in the documentation of the GMap2 class from the Google Maps API documentation, you will find something about the +addOverlay+ JavaScript method. In fact, when you call on a mapping object an unknow method, it is converted to a javascriptified version of it, along with its arguments, and a string of JavaScript code is output. So the <tt>@map.add_overlay...</tt> above is converted to <tt>"map.addOverlay(new GMarker(GLatLng.new(35.12878, -110.578),{title:\"Hello!\"}))"</tt>, which is then passed to the +record_init+ method of a Ruby GMap object to be later output along with the rest of the initialization code.
+While +center_zoom_init+ and +control_init+ are one of the rare convenience methods that do not output JavaScript, the +add_overlay+ does. Actually, if you look at the code of the GMap class, you won't find any +add_overlay+ method, although in the documentation of the GMap2 class from the Google Maps API documentation, you will find something about the +addOverlay+ JavaScript method. In fact, when you call on a mapping object an unknow method, it is converted to a javascriptified version of it, along with its arguments, and a string of JavaScript code is output. So the <tt>@map.add_overlay...</tt> above is converted to <tt>"map.addOverlay(new GMarker(GLatLng.new(35.12878, -110.578),{title:\"Hello!\"}))"</tt>, which is then passed to the +record_init+ method of a Ruby GMap object to be later output along with the rest of the initialization code. 
+
+Starting with version 0.1.4 of the YM4R library, this call to +record_init+ to add an overlay could have been replaced with a call to +overlay_init+:
+	@map.overlay_init GMarker.new([35.12878, -110.578],:title => "Hello!")
+which is strictly equivalent to
+	@map.record_init @map.add_overlay(new GMarker([35.12878, -110.578],:title => "Hello!"))
 
 =====Initialization of the map
-The map is represented by a GMap object. You need to pass to the constructor the id of a DIV that will contain the map. You have to place this DIV yourself in your HTML template. You can also optionnally pass to the constructor the JavaScript name of the variable that will reference the map, which by default will be global in JavaScript. You have convenience methods to setup the controls, the center, the zoom and the icons (which are also global). You can also pass arbitrary JavaScript to +record_init+ and +record_global_init+. Since, by default, the initialization of the map is performed in a callback function, if you want to have a globally accessible variable, you need to use the +global+ version.
+The map is represented by a GMap object. You need to pass to the constructor the id of a DIV that will contain the map. You have to place this DIV yourself in your HTML template. You can also optionnally pass to the constructor the JavaScript name of the variable that will reference the map, which by default will be global in JavaScript. You have convenience methods to setup the controls, the center, the zoom, overlays and the icons (which are also global). You can also pass arbitrary JavaScript to +record_init+ and +record_global_init+. Since, by default, the initialization of the map is performed in a callback function, if you want to have a globally accessible variable, you need to use the +global+ version.
 
 Then in your template, you have 2 necessary calls:
 - <tt>GMap#header</tt>: Outputs the inclusion of the JavaScript file from Google to make use of the Google Maps API + a style declaration for VML objects, necessary to display polylines under IE.
@@ -33,12 +44,9 @@ You are able to update the map through Ajax. For example, in Ruby-on-Rails, you 
 For example, if you want to add a marker to the map, you need to do a few things. First, you have to bind a Ruby mapping object to the global JavaScript map variable. By default its name is +map+, but you could have overriden that at initialization time. You need to do something like this:
 	@map = Variable.new("map")
 +map+ in the Variable constructor is the name of the global JavaScript map variable. Then any method you call on <tt>@map</tt> will be converted in JavaScript to a method called on +map+. In your RJS code, you would do something like this to add a marker:
-	page.send :record, @map.add_overlay(GMarker.new([123123.1,12313.76],:info_window => "Hello again!"))
-
-=====Naming conventions
-The names of the Ruby class follow the ones in the JavaScript Google Maps API v2. To know what is possible to do, you should refer to the documentation available on Google website.
-
-On top of that, you have some convenience methods for initializing the map (in the GMap class). Also, the constructors of some classes accept different types of arguments to be converted later in the correct JavaScript format. For example, the +GMarker+ aclass accepts an array of 2 floats as parameter, in addition of a GLatLng object, to indicate its position. It also facilitates the attribution of an HTML info window, displayed when the user clicks on it, since you can pass to the constructor an options hash with the <tt>:info_window</tt> key and the text to display as the value.
+	page.send :record, @map.add_overlay(GMarker.new([123123.1,12313.76],:title => "Hello again!"))
+What is sent to the browser will be the fllowing JavaScript code:
+	map.addOverlay(new GMarker(new GLatLng(123123.1,12313.76),{title:\"Hello again!\"}))
 
 ====Yahoo Maps Building Block API
 Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters detailed in the documentation for these API's. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.

@@ -70,7 +70,7 @@ module Ym4r
       def declare(variable)
         decl = super(variable)
         @options.each do |key,value|
-          decl << "#{variable}.#{javascriptify_method(key.to_s)} = #{javascriptify_variable(value)};\n"
+          decl << "#{to_javascript}.#{javascriptify_method(key.to_s)} = #{javascriptify_variable(value)};\n"
         end
         decl
       end
