@@ -1,15 +1,47 @@
 =YM4R
-This is YM4R 0.1.2. The goal of YM4R (YM4R Maps For Ruby) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+This is YM4R 0.1.3. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ===Operations
 ====Google Maps
-You can use the library to display maps easily from your rails application. Update through RJS is possible. Check out the tutorial at http://thepochisuperstarmegashow.com/2006/06/02/ym4r-georuby-spatial-adapter-demo/
+You can use the library to display Google maps easily with any ruby-based web framework. The version of the API used is v2. The library is engineered so updates to the map through Ajax are possible. I have made available 2 in-depth tutorials to show some of the functionalities of the library and how it can be integrated with GeoRuby and the Spatial Adapter for Rails:
+- http://thepochisuperstarmegashow.com/2006/06/02/ym4r-georuby-spatial-adapter-demo/
+- http://thepochisuperstarmegashow.com/2006/06/03/google-maps-yahoo-traffic-mash-up/
+Following is some notes about using the library:
 
-====Yahoo Maps
-There is at the moment preliminary support for the JS-Flash Yahoo! Maps API, although it is not very polished. Check back next version!
+=====Binding JavaScript and Ruby
+Since the Google Maps API uses JavaScript to create and manipulate a map, most of what the library does is outputting JavaScript, although some convenience methods are provided to simplify some common operations at initialization time. When you create a YM4R mapping object (a Ruby object which includes the MappingObject module) and call methods on it, these calls are converted by the library into JavaScript code. At initialization time, you can pass arbitrary JavaScript code to the <tt>GMap#record_init</tt> and <tt>GMap#record_global_init</tt>.Then, at update time, if you use Ruby-on-Rails as your web framework, you can update your map through RJS by passing the result of the method calls to the <tt>page.send :record,...</tt> method to have it then interpreted by the browser.
+
+For example, here is a typical initialization sequence for a map
+	@map = GMap.new("map_div")
+	@map.center_zoom_init([35.12313,-110.567],12)
+	@map.record_init @map.add_overlay(GMarker.new([35.12878, -110.578],:title => "Hello!"))
+
+While +center_zoom_init+ is one of the rare convenience methods that do not output JavaScript, the +add_overlay+ does. Actually, if you look at the code of the GMap class, you won't find any +add_overlay+ method, although in the documentation of the GMap2 class from the Google Maps API documentation, you will find something about the +addOverlay+ JavaScript method. In fact, when you call on a mapping object an unknow method, it is converted to a javascriptified version of it, along with its arguments, and a string of JavaScript code is output. So the <tt>@map.add_overlay...</tt> above is converted to <tt>"map.addOverlay(new GMarker(GLatLng.new(35.12878, -110.578),{title:\"Hello!\"}))"</tt>, which is then passed to the +record_init+ method of a Ruby GMap object to be later output along with the rest of the initialization code.
+
+=====Initialization of the map
+The map is represented by a GMap object. You need to pass to the constructor the id of a DIV that will contain the map. You have to place this DIV yourself in your HTML template. You can also optionnally pass to the constructor the JavaScript name of the variable that will reference the map, which by default will be global in JavaScript. You have convenience methods to setup the controls, the center, the zoom and the icons (which are also global). You can also pass arbitrary JavaScript to +record_init+ and +record_global_init+. Since, by default, the initialization of the map is performed in a callback function, if you want to have a globally accessible variable, you need to use the +global+ version.
+
+Then in your template, you have 2 necessary calls:
+- <tt>GMap#header</tt>: Outputs the inclusion of the JavaScript file from Google to make use of the Google Maps API + a style declaration for VML objects, necessary to display polylines under IE.
+- <tt>GMap#to_html</tt>: Outputs the initialization code of the map. By default, it outputs the +script+ tags and initializes the map inside a +load+ function. These settings can however be overridden.
+
+You need to have an <tt>onload="load()"</tt> on the body of the HTML document, as well as place a DIV with the chosen ID to have the map correctly displayed.
+
+=====Update of the map
+You are able to update the map through Ajax. For example, in Ruby-on-Rails, you have something called RJS, which sends JavaScript created on the server as a response to an action, which is later interpreted by the browser. It is usually used for visual effects and replacing or adding elements. It can also accept arbitrary JavaScript and this is what YM4R uses.
+
+For example, if you want to add a marker to the map, you need to do a few things. First, you have to bind a Ruby mapping object to the global JavaScript map variable. By default its name is +map+, but you could have overriden that at initialization time. You need to do something like this:
+	@map = Variable.new("map")
++map+ in the Variable constructor is the name of the global JavaScript map variable. Then any method you call on <tt>@map</tt> will be converted in JavaScript to a method called on +map+. In your RJS code, you would do something like this to add a marker:
+	page.send :record, @map.add_overlay(GMarker.new([123123.1,12313.76],:info_window => "Hello again!"))
+
+=====Naming conventions
+The names of the Ruby class follow the ones in the JavaScript Google Maps API v2. To know what is possible to do, you should refer to the documentation available on Google website.
+
+On top of that, you have some convenience methods for initializing the map (in the GMap class). Also, the constructors of some classes accept different types of arguments to be converted later in the correct JavaScript format. For example, the +GMarker+ aclass accepts an array of 2 floats as parameter, in addition of a GLatLng object, to indicate its position. It also facilitates the attribution of an HTML info window, displayed when the user clicks on it, since you can pass to the constructor an options hash with the <tt>:info_window</tt> key and the text to display as the value.
 
 ====Yahoo Maps Building Block API
-Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
+Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters detailed in the documentation for these API's. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
 
 To know what parameters to pass to the +get+ methods and what results you should expect, you should consult the documentation for the building block API's on Yahoo!'s website : http://developer.yahoo.com/maps/index.html#mapsBuildingBlocks . 
 
@@ -22,7 +54,7 @@ Here is an example of request:
                              	  :city => "Cupertino",
                                   :state => "CA",
                                   :zip => "95014")
-+results+ is an array of Geocoding::Result objects. The API can return up to 50 results for one request. Read the documentation page of the Geocoding::Result class to know how to access the data.
++results+ is an array of Geocoding::Result objects. The API can return up to 50 results for one request. You can access the data in the result with attributes which are rubyfied versions of the XML elements forming the answer from the service: See the Yahoo! Geocoding documentation to know what these are and their meanings.
 
 =====Map Image
 Here is an example of request:
@@ -56,6 +88,9 @@ Here is an example of request:
                                    :zip => "95014",
                                    :query => "chinese")
 +results+ is a LocalSearch::ResultSet object (subclass of +Array+), containing LocalSearch::Result objects, each containing information about one hit on the Yahoo! local search.
+
+====Yahoo! Maps JS-Flash API
+Preliminary support for this API has been added. It works along the same lines as with the Google Maps API but it is not very polished currently.
 
 ===Changes since last version
 - Addition of support for the Google Maps API
