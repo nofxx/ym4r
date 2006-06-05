@@ -37,13 +37,13 @@ module Ym4r
       #Declares a Mapping Object bound to a JavaScript variable of name +variable+.
       def declare(variable)
         @variable = variable
-        "var #{variable} = #{create};\n"
+        "var #{variable} = #{create};"
       end
       
       #Binds a Mapping object to a previously declared JavaScript variable of name +variable+.
       def assign_to(variable)
         @variable = variable
-        "#{variable} = #{create};\n"
+        "#{variable} = #{create};"
       end
       
       #Returns a Javascript code representing the object
@@ -61,14 +61,19 @@ module Ym4r
       end
     end
 
-    #Used to bind a ruby variable to an already existing JavaScript one. IT doesn't have to be a variable in the sense "var variable" but it can be any valid JavaScript expression that has a value.
+    #Used to bind a ruby variable to an already existing JavaScript one. It doesn't have to be a variable in the sense "var variable" but it can be any valid JavaScript expression that has a value.
     class Variable
       include MappingObject
       def initialize(variable)
         @variable = variable
       end
+      #Returns the javascript expression contained in the object.
+      def create
+        @variable
+      end
+      #Returns the expression inside the Variable followed by a ";"
       def to_s
-        @variable + ";\n"
+        @variable + ";"
       end
     end
   end

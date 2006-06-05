@@ -68,7 +68,7 @@ module Ym4r
       end
       #Declares a GIcon. It is necessary to declare an icon before using it, since it is the only way to set up its attributes.
       def declare(variable)
-        decl = super(variable)
+        decl = super(variable) + "\n"
         @options.each do |key,value|
           decl << "#{to_javascript}.#{javascriptify_method(key.to_s)} = #{javascriptify_variable(value)};\n"
         end

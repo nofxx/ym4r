@@ -1,5 +1,5 @@
 =YM4R
-This is YM4R 0.1.3. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+This is YM4R 0.1.4. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ===Operations
 ====Google Maps
