@@ -8,29 +8,39 @@ module Ym4r
       #Creates javascript code for missing methods
       def method_missing(name,*args)
         args.collect! do |arg|
-          javascriptify_variable(arg)
+          MappingObject.javascriptify_variable(arg)
         end
-        Variable.new("#{to_javascript}.#{javascriptify_method(name.to_s)}(#{args.join(",")})")
+        Variable.new("#{to_javascript}.#{MappingObject.javascriptify_method(name.to_s)}(#{args.join(",")})")
+      end
+            
+      def [](index) #index could be an integer or string
+        return Variable.new("#{to_javascript}[#{MappingObject.javascriptify_variable(index)}]")
       end
 
-      #Transforms a Ruby object into a JavaScript string
-      def javascriptify_variable(arg)
+      #Transforms a Ruby object into a JavaScript string : MAppingObject, String, Array, Hash and general case (using to_s)
+      def self.javascriptify_variable(arg)
         if arg.is_a?(MappingObject)
           arg.to_javascript
         elsif arg.is_a?(String)
           "\"#{escape_javascript(arg)}\""
+        elsif arg.is_a?(Array)
+          "[" + arg.collect{ |a| javascriptify_variable(a)}.join(",") + "]"
+        elsif arg.is_a?(Hash)
+          "{" + arg.to_a.collect do |v|
+            "#{v[0].to_s} : #{MappingObject::javascriptify_variable(v[1])}"
+          end.join(",") + "}"
         else
           arg.to_s
         end
       end
       
       #Escape string to be used in JavaScript. Lifted from rails.
-      def escape_javascript(javascript)
+      def self.escape_javascript(javascript)
         javascript.gsub(/\r\n|\n|\r/, "\\n").gsub(/["']/) { |m| "\\#{m}" }
       end
       
       #Transform a ruby-type method name (like add_overlay) to a JavaScript-style one (like addOverlay).
-      def javascriptify_method(method_name)
+      def self.javascriptify_method(method_name)
         method_name.gsub(/_(\w)/){|s| $1.upcase}
       end
       

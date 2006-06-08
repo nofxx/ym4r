@@ -24,6 +24,10 @@ module Ym4r
         a << "<style type=\"text/css\">\n v\:* { behavior:url(#default#VML);}\n</style>" if with_vml
         a
       end
+     
+      def div
+        "<div id=\"#{@container}\"></div>"
+      end
 
       #Outputs a style declaration setting the dimensions of the DIV container of the map. This info can also be set manually in a CSS.
       def header_width_height(width,height)
@@ -72,18 +76,19 @@ module Ym4r
       #Outputs the initialization code for the map. By default, it outputs the script tags, performs the initialization inside a function called +load+ and makes the map globally available.
       def to_html(options = {})
         no_load = options[:no_load]
-        load_method = options[:load_method] || "load"
         no_script_tag = options[:no_script_tag]
         no_declare = options[:no_declare]
         no_global = options[:no_global]
         
         html = ""
         html << "<script type=\"text/javascript\">\n" if !no_script_tag
+        #put the functions in a separate javascript file to be included in the page
         html << "function addInfoWindowToMarker(marker,info){\nGEvent.addListener(marker, \"click\", function() {\nmarker.openInfoWindowHtml(info);\n});\nreturn marker;\n}\n"
         html << "function addInfoWindowTabsToMarker(marker,info){\nGEvent.addListener(marker, \"click\", function() {\nmarker.openInfoWindowTabsHtml(info);\n});\nreturn marker;\n}\n"
+        html << "function addPropertiesToLayer(layer,getTile,copyright,opacity){\nlayer.getTileUrl = getTile;\nlayer.getCopyright = copyright;\nlayer.getOpacity = opacity;\nreturn layer;\n}\n"
         html << @global_init * "\n"
         html << "var #{@variable};\n" if !no_declare and !no_global
-        html << "function #{load_method}() {\nif (GBrowserIsCompatible()) {\n" if !no_load
+        html << "window.onload = function() {\nif (GBrowserIsCompatible()) {\n" if !no_load
         if !no_declare and no_global 
           html << "#{declare(@variable)}\n"
         else
@@ -91,6 +96,7 @@ module Ym4r
         end
         html << @init * "\n"
         html << "\n}\n}\n" if !no_load
+        html << "window.onunload = GUnload;\n"
         html << "</script>" if !no_script_tag
         html
       end
@@ -101,12 +107,7 @@ module Ym4r
       end
     end
 
-    #Map types of the map
-    module GMapType
-      G_NORMAL_MAP = Variable.new("GMapType.G_NORMAL_MAP")
-      G_SATELLITE_MAP = Variable.new("GMapType.G_SATELLITE_MAP")
-      G_HYBRID_MAP = Variable.new("GMapType.G_HYBRID_MAP")
-    end
+    
   end
 end
 
