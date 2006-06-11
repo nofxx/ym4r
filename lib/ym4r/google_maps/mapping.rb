@@ -22,12 +22,12 @@ module Ym4r
         if arg.is_a?(MappingObject)
           arg.to_javascript
         elsif arg.is_a?(String)
-          "\"#{escape_javascript(arg)}\""
+          "\"#{MappingObject.escape_javascript(arg)}\""
         elsif arg.is_a?(Array)
-          "[" + arg.collect{ |a| javascriptify_variable(a)}.join(",") + "]"
+          "[" + arg.collect{ |a| MappingObject.javascriptify_variable(a)}.join(",") + "]"
         elsif arg.is_a?(Hash)
           "{" + arg.to_a.collect do |v|
-            "#{v[0].to_s} : #{MappingObject::javascriptify_variable(v[1])}"
+            "#{MappingObject.javascriptify_method(v[0].to_s)} : #{MappingObject.javascriptify_variable(v[1])}"
           end.join(",") + "}"
         else
           arg.to_s
@@ -47,13 +47,35 @@ module Ym4r
       #Declares a Mapping Object bound to a JavaScript variable of name +variable+.
       def declare(variable)
         @variable = variable
-        "var #{variable} = #{create};"
+        "var #{@variable} = #{create};"
+      end
+
+      #declare with a random variable name
+      def declare_random(init,size = 8)
+        s = init.clone
+        6.times { s << (i = Kernel.rand(62); i += ((i < 10) ? 48 : ((i < 36) ? 55 : 61 ))).chr }
+        declare(s)
+      end
+
+      #Checks if the MappinObject has been declared
+      def declared?
+        !@variable.nil?
       end
       
       #Binds a Mapping object to a previously declared JavaScript variable of name +variable+.
       def assign_to(variable)
         @variable = variable
-        "#{variable} = #{create};"
+        "#{@variable} = #{create};"
+      end
+
+      #Assign the +value+ to the +property+ of the MappingObject
+      def set_property(property, value)
+        "#{to_javascript}.#{MappingObject.javascriptify_method(property.to_s)} = #{MappingObject.javascriptify_variable(value)}"
+      end
+
+      #Returns the code to get a +property+ from the MappingObject
+      def get_property(property)
+        Variable.new("#{to_javascript}.#{MappingObject.javascriptify_method(property.to_s)}")
       end
       
       #Returns a Javascript code representing the object

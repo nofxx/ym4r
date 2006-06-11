@@ -4,18 +4,21 @@ module Ym4r
     class GMapType
       include MappingObject
       
-      G_NORMAL_MAP = Variable.new("GMapType.G_NORMAL_MAP")
-      G_SATELLITE_MAP = Variable.new("GMapType.G_SATELLITE_MAP")
-      G_HYBRID_MAP = Variable.new("GMapType.G_HYBRID_MAP")
+      G_NORMAL_MAP = Variable.new("G_NORMAL_MAP")
+      G_SATELLITE_MAP = Variable.new("G_SATELLITE_MAP")
+      G_HYBRID_MAP = Variable.new("G_HYBRID_MAP")
       
-      attr_accessor :layers, :name, :projection
+      attr_accessor :layers, :name, :projection, :options
       
       def initialize(layers, name, projection = GMercatorProjection.new,options = {})
         @layers = layers
+        @name = name
+        @projection = projection
+        @options = options
       end
 
       def create
-        "new GMapType(#{javascriptify_variable(Array(layers))}, #{javascriptify_variable(projection)}, #{javascriptify_variable(name)}, #{javascriptify_variable(options)})"
+        "new GMapType(#{MappingObject.javascriptify_variable(Array(layers))}, #{MappingObject.javascriptify_variable(projection)}, #{MappingObject.javascriptify_variable(name)}, #{MappingObject.javascriptify_variable(options)})"
       end
     end
 
@@ -36,20 +39,20 @@ module Ym4r
         end
       end
     end
-    
+
     class GTileLayer
       include MappingObject
             
       attr_accessor :opacity, :zoom_inter, :copyright
 
-      def initialize(zoom_inter = 0..17, copyright= ['prefix' => '', 'copyright_texts' => [""]], opacity = 1.0)
+      def initialize(zoom_inter = 0..17, copyright= {'prefix' => '', 'copyright_texts' => [""]}, opacity = 1.0)
         @opacity = opacity
         @zoom_inter = zoom_inter
         @copyright = copyright
       end
 
       def create
-        "addPropertiesToLayer(new GTileLayer(new GCopyrightCollection(\"\"),#{zoom_inter.begin},#{zoom_inter.end}),#{get_tile_url}, function(a,b) {return #{MappingObject.javascriptify_variable(@copyright)};}, function() {return #{@opacity};})"
+        "addPropertiesToLayer(new GTileLayer(new GCopyrightCollection(\"\"),#{zoom_inter.begin},#{zoom_inter.end}),#{get_tile_url},function(a,b) {return #{MappingObject.javascriptify_variable(@copyright)};}\n,function() {return #{@opacity};})"
       end
       
       #for subclasses to implement
@@ -58,11 +61,9 @@ module Ym4r
     end
     
     class PreTiledLayer < GTileLayer
-      include MappingObject
-      
       attr_accessor :base_url, :format
       
-      def initialize(base_url, format = "png", zoom_inter = 0..17, copyright = ['prefix' => '', 'copyright_texts' => [""]], opacity = 1.0)
+      def initialize(base_url = "http://localhost:8080/tiles", copyright = {'prefix' => '', 'copyright_texts' => [""]}, zoom_inter = 0..17, opacity = 1.0,format = "png")
         super(zoom_inter, copyright, opacity)
         @base_url = base_url
         @format = format
@@ -74,24 +75,33 @@ module Ym4r
       end 
     end
     
-    #needs to modify the wms-gs.js script for this to work : check with the people who wrote it if it is ok
     #needs to include the JavaScript file wms-gs.js for this to work
     #see http://docs.codehaus.org/display/GEOSDOC/Google+Maps
     class WMSLayer < GTileLayer
-      include MappingObject
+      attr_accessor :base_url, :layers, :styles, :format, :merc_proj, :use_geographic
 
-      attr_accessor :base_url, :layers, :styles, :format
-
-      def initialize(base_url, layers, styles = "", format= "png", zoom_inter = 0..17, copyright = ['prefix' => '', 'copyright_texts' => [""]], opacity = 1.0)
+      def initialize(base_url, layers, styles = "", copyright = {'prefix' => '', 'copyright_texts' => [""]}, use_geographic = false, merc_proj = :mapserver, zoom_inter = 0..17, opacity = 1.0,format= "png")
         super(zoom_inter, copyright, opacity)
         @base_url = base_url
         @layers = layers
         @styles = styles
         @format = format
+        @merc_proj = if merc_proj == :mapserver
+                       "54004"
+                     elsif merc_proj == :geoserver
+                       "41001"
+                     else
+                       merc_proj.to_s
+                     end
+        @use_geographic = use_geographic
       end
       
       def get_tile_url
-        "CustomGetTileUrl"
+        "getTileUrlForWMS"
+      end
+
+      def create
+        "addWMSPropertiesToLayer(#{super},#{MappingObject.javascriptify_variable(@base_url)},#{MappingObject.javascriptify_variable(@layers)},#{MappingObject.javascriptify_variable(@styles)},#{MappingObject.javascriptify_variable(@format)},#{MappingObject.javascriptify_variable(@merc_proj)},#{MappingObject.javascriptify_variable(@use_geographic)})"
       end
     end
   end

@@ -20,14 +20,14 @@ module Ym4r
       #Creates a marker: If an info_window or info_window_tabs is present, the response to the click action from the user is setup here.
       def create
         if @options.empty?
-          creation = "new GMarker(#{MappingObject::javascriptify_variable(@point)})"
+          creation = "new GMarker(#{MappingObject.javascriptify_variable(@point)})"
         else
-          creation = "new GMarker(#{MappingObject::javascriptify_variable(@point)},#{MappingObject::javascriptify_variable(@options)})"
+          creation = "new GMarker(#{MappingObject.javascriptify_variable(@point)},#{MappingObject.javascriptify_variable(@options)})"
         end
         if @info_window
-          "addInfoWindowToMarker(#{creation},#{MappingObject::javascriptify_variable(@info_window)})"
+          "addInfoWindowToMarker(#{creation},#{MappingObject.javascriptify_variable(@info_window)})"
         elsif @tab_info_window
-          "addInfoWindowTabsToMarker(#{creation},#{MappingObject::javascriptify_variable(Array(@tab_info_window))})"
+          "addInfoWindowTabsToMarker(#{creation},#{MappingObject.javascriptify_variable(Array(@tab_info_window))})"
         else
           creation
         end
@@ -38,7 +38,7 @@ module Ym4r
     class GInfoWindowTab < Struct.new(:tab,:content)
       include MappingObject
       def create
-        "new GInfoWindowTab(#{MappingObject::javascriptify_variable(tab)},#{MappingObject::javascriptify_variable(content)})"
+        "new GInfoWindowTab(#{MappingObject.javascriptify_variable(tab)},#{MappingObject.javascriptify_variable(content)})"
       end
     end
         
@@ -56,7 +56,7 @@ module Ym4r
       #Creates a GIcon.
       def create
         if @copy_base
-          "new GIcon(#{MappingObject::javascriptify_variable(@copy_base)})"
+          "new GIcon(#{MappingObject.javascriptify_variable(@copy_base)})"
         else
           "new GIcon()"
         end
@@ -65,7 +65,7 @@ module Ym4r
       def declare(variable)
         decl = super(variable) + "\n"
         @options.each do |key,value|
-          decl << "#{to_javascript}.#{MappingObject::javascriptify_method(key.to_s)} = #{MappingObject::javascriptify_variable(value)};\n"
+          decl << "#{to_javascript}.#{MappingObject.javascriptify_method(key.to_s)} = #{MappingObject.javascriptify_variable(value)};\n"
         end
         decl
       end
@@ -88,10 +88,10 @@ module Ym4r
       end
       #Creates a new polyline.
       def create
-        a = "new GPolyline([#{@points.collect{|pt| MappingObject::javascriptify_variable(pt)}.join(",")}]"
-        a << ",#{MappingObject::javascriptify_variable(@color)}" if @color
-        a << ",#{MappingObject::javascriptify_variable(@weight)}" if @weight
-        a << ",#{MappingObject::javascriptify_variable(@opacity)}" if @opacity
+        a = "new GPolyline([#{@points.collect{|pt| MappingObject.javascriptify_variable(pt)}.join(",")}]"
+        a << ",#{MappingObject.javascriptify_variable(@color)}" if @color
+        a << ",#{MappingObject.javascriptify_variable(@weight)}" if @weight
+        a << ",#{MappingObject.javascriptify_variable(@opacity)}" if @opacity
         a << ")"
       end
       

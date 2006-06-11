@@ -58,9 +58,22 @@ module Ym4r
         end
       end
 
-      #Initializes the map by adding an overlay (marker or polyline). It can be called multiple times
+      #Initializes the map by adding an overlay (marker or polyline).
       def overlay_init(overlay)
         @init << add_overlay(overlay)
+      end
+
+      #Sets up a new map type. If +add+ is false, all the other map types of the map are wiped out. If +set+ is true, the current map type for the map is set to +map_type+. If you want to access the map type in other methods, you should declare the map type first.
+      def map_type_init(map_type, add = true)
+        unless add
+          @init << get_map_types.set_property(:length,0)
+        end
+        @init << add_map_type(map_type)
+      end
+
+      #Locally declare a MappingObject with variable name "name"
+      def declare_init(variable, name)
+        @init << variable.declare(name)
       end
 
       #Records arbitrary JavaScript code and outputs it during initialization outside the +load+ function (ie globally).
@@ -69,8 +82,13 @@ module Ym4r
       end
       
       #Initializes an icon  and makes it globally accessible through the JavaScript variable of name +variable+.
-      def icon_init(icon , variable)
-        @global_init << icon.declare(variable)
+      def icon_init(icon , name)
+        declare_global_init(icon,name)
+      end
+
+      #Globally declare a MappingObject with variable name "name"
+      def declare_global_init(variable,name)
+        @global_init << variable.declare(name)
       end
       
       #Outputs the initialization code for the map. By default, it outputs the script tags, performs the initialization inside a function called +load+ and makes the map globally available.
