@@ -49,13 +49,7 @@ opts = OptionParser.new do |opts|
     options.geographic = g
   end
   opts.on("-e", "--epsg SRS","SRS to query the WMS server. Should be a the SRS id of a Simple Mercator projection. Can vary between WMS servers. Is 54004 (Simple Mercator for Mapserver) by default") do |srs|
-    options.srs = if srs == "geoserver"
-                    41001
-                  elsif srs == "mapserver"
-                    54004
-                  else
-                    srs.to_i
-                  end
+    options.srs = srs
                     
   end
   opts.on_tail("-h", "--help", "Show this message") do
