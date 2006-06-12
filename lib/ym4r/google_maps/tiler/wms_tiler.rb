@@ -4,17 +4,22 @@ module Ym4r
   module GoogleMaps
     module Tiler
       module WmsTiler
+        #Contains LatLon coordinates
         class LatLng < Struct.new(:lat,:lng)
         end
         
+        #Contain projected coordinates (in pixel or meter)
         class Point < Struct.new(:x,:y)
         end
         
+        #Structure that contains configuration data for the WMS tiler
         class FurthestZoom < Struct.new(:ul_corner, :zoom, :tile_size)
         end
         
+        #The size of a Google Maps tile. There are square so only one size.
         TILE_SIZE = 256
         
+        #Defines a Simple Mercator projection for one level of Google Maps zoom.
         class MercatorProjection
           DEG_2_RAD = Math::PI / 180
           WGS84_SEMI_MAJOR_AXIS = 6378137.0
@@ -40,7 +45,8 @@ module Ym4r
             end
           end
           
-          #see http://en.wikipedia.org/wiki/Mercator_projection for explanation
+          #Transforms LatLon coordinate into pixel coordinates in the Google Maps sense
+          #See http://www.math.ubc.ca/~israel/m103/mercator/mercator.html for details
           def latlng_to_pixel(latlng)
             answer = Point.new
             answer.x = (@origin.x + latlng.lng * @pixel_per_degree).round
@@ -49,6 +55,7 @@ module Ym4r
             answer
           end
           
+          #Transforms pixel coordinates in the Google Maps sense to LatLon coordinates
           def pixel_to_latlng(point)
             answer = LatLng.new
             lng = (point.x - @origin.x) / @pixel_per_degree;
@@ -58,6 +65,7 @@ module Ym4r
             answer
           end
           
+          #Projects LatLon coordinates in the WGS84 datum to meter coordinates using the Simple Mercator projection
           def self.latlng_to_meters(latlng)
             answer = Point.new
             answer.x = WGS84_SEMI_MAJOR_AXIS * latlng.lng * DEG_2_RAD
@@ -67,13 +75,13 @@ module Ym4r
           end
         end
         
-        #add an option for the EPSG for Mercator : 41001 by default; can be redefined
+        #Get tiles from a WMS server 
         def self.get_tiles(output_dir, url, furthest_zoom, zooms, layers, geographic = false, epsg = 54004, styles = "", format = "png")
           
           unless geographic
             srs_str = epsg
           else
-            srs_str = 4326
+            srs_str = 4326 #Geographic WGS84
           end
           
           base_url = url << "?REQUEST=GetMap&SERVICE=WMS&VERSION=1.1&LAYERS=#{layers}&STYLES=#{styles}&BGCOLOR=0xFFFFFF&FORMAT=image/#{format}&TRANSPARENT=TRUE&WIDTH=#{TILE_SIZE}&HEIGHT=#{TILE_SIZE}&SRS=EPSG:#{srs_str}&reaspect=false"
@@ -128,7 +136,7 @@ module Ym4r
                     
               begin
                 open("#{output_dir}/tile_#{zoom}_#{x_tile}_#{y_tile}.#{format}","wb") do |f|
-                f.write open(request_url).read
+                  f.write open(request_url).read
                 end
               rescue Exception => e
                 puts e

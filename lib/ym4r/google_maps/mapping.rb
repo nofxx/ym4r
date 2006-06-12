@@ -13,6 +13,7 @@ module Ym4r
         Variable.new("#{to_javascript}.#{MappingObject.javascriptify_method(name.to_s)}(#{args.join(",")})")
       end
             
+      #Creates javascript code for array or hash indexing
       def [](index) #index could be an integer or string
         return Variable.new("#{to_javascript}[#{MappingObject.javascriptify_variable(index)}]")
       end

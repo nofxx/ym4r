@@ -1,19 +1,19 @@
 =YM4R
 This is YM4R 0.2.1. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
-===Operations
-====Google Maps
+==Operations
+===Google Maps
 You can use the library to display Google maps easily with any ruby-based web framework. The version of the API used is v2. The library is engineered so updates to the map through Ajax are possible. I have made available 2 in-depth tutorials to show some of the functionalities of the library and how it can be integrated with GeoRuby and the Spatial Adapter for Rails:
 - http://thepochisuperstarmegashow.com/2006/06/02/ym4r-georuby-spatial-adapter-demo/
 - http://thepochisuperstarmegashow.com/2006/06/03/google-maps-yahoo-traffic-mash-up/
 Following is some notes about using the library:
 
-=====Naming conventions
+====Naming conventions
 The names of the Ruby class follow the ones in the JavaScript Google Maps API v2, except for GMap2, which in Ruby code is called simply GMap. To know what is possible to do with each class, you should refer to the documentation available on Google website.
 
 On top of that, you have some convenience methods for initializing the map (in the GMap class). Also, the constructors of some classes accept different types of arguments to be converted later in the correct JavaScript format. For example, the +GMarker+ aclass accepts an array of 2 floats as parameter, in addition of a GLatLng object, to indicate its position. It also facilitates the attribution of an HTML info window, displayed when the user clicks on it, since you can pass to the constructor an options hash with the <tt>:info_window</tt> key and the text to display as the value, instead of having to wire the response to a click event yourself.
 
-=====Binding JavaScript and Ruby
+====Binding JavaScript and Ruby
 Since the Google Maps API uses JavaScript to create and manipulate a map, most of what the library does is outputting JavaScript, although some convenience methods are provided to simplify some common operations at initialization time. When you create a YM4R mapping object (a Ruby object which includes the MappingObject module) and call methods on it, these calls are converted by the library into JavaScript code. At initialization time, you can pass arbitrary JavaScript code to the <tt>GMap#record_init</tt> and <tt>GMap#record_global_init</tt>.Then, at update time, if you use Ruby-on-Rails as your web framework, you can update your map through RJS by passing the result of the method calls to the <tt>page << </tt> method to have it then interpreted by the browser.
 
 For example, here is a typical initialization sequence for a map
@@ -29,7 +29,7 @@ Starting with version 0.1.4 of the YM4R library, this call to +record_init+ to a
 which is strictly equivalent to
 	@map.record_init @map.add_overlay(new GMarker([35.12878, -110.578],:title => "Hello!"))
 
-=====Initialization of the map
+====Initialization of the map
 The map is represented by a GMap object. You need to pass to the constructor the id of a DIV that will contain the map. You have to place this DIV yourself in your HTML template. You can also optionnally pass to the constructor the JavaScript name of the variable that will reference the map, which by default will be global in JavaScript. You have convenience methods to setup the controls, the center, the zoom, overlays, map types and the icons (which are also global). You can also pass arbitrary JavaScript to +record_init+ and +record_global_init+. Since, by default, the initialization of the map is performed in a callback function, if you want to have a globally accessible variable, you need to use the +global+ version.
 
 Then in your template, you have 2 necessary calls:
@@ -38,7 +38,7 @@ Then in your template, you have 2 necessary calls:
 
 Starting with version 0.2.1, there is no need to manually wire in the body element the response to the +load+ and +unload+ events on the JavaScript window object.
 
-=====Update of the map
+====Update of the map
 You are able to update the map through Ajax. For example, in Ruby-on-Rails, you have something called RJS, which sends JavaScript created on the server as a response to an action, which is later interpreted by the browser. It is usually used for visual effects and replacing or adding elements. It can also accept arbitrary JavaScript and this is what YM4R uses.
 
 For example, if you want to add a marker to the map, you need to do a few things. First, you have to bind a Ruby mapping object to the global JavaScript map variable. By default its name is +map+, but you could have overriden that at initialization time. You need to do something like this:
@@ -48,7 +48,7 @@ For example, if you want to add a marker to the map, you need to do a few things
 What is sent to the browser will be the fllowing JavaScript code:
 	map.addOverlay(new GMarker(new GLatLng(123123.1,12313.76),{title:\"Hello again!\"}))
 
-=====Adding new map types
+====Adding new map types
 It is now possible to easily add new map types, on top of the already existing ones, like G_SATELLITE_MAP or G_NORMAL_MAP. The imagery for these new map types can come from layers of the standard map types or can be taken either from a WMS server or from pretiled images on a server (that can be generated with a tool that comes with the library). 
 
 For exemple, here is how you would setup layers from a public WMS server of the DMAP team of the American Navy:
@@ -60,7 +60,7 @@ This sets up a connection to a WMS service, requesting layers <tt>20:3,6:3,0:27,
 
 The arguments +true+ and <tt>:mapserver</tt> warrant some explanation. The Google Maps are in the Simple Mercator projection in the WGS84 datum and currently do not support the display of data in projections other than that, although it may change in the future. Unfortunately, different WMS servers do not identify this projection the same way. So you can give to the WMSLayer constructor your server type and it will figure out what is the correct identifier. Currently, this works only for <tt>:mapserver</tt> (EPSG:54004) and <tt>:geoserver</tt> (EPSG:41001). For others you can directly pass a number corresponding to the EPSG definition of the simple Mercator projection of your server. On top of that, some servers just don't support the Simple Mercator projection. This is why there is a +true+ argument before <tt>:mapserver</tt> in the example. It is in order to tell the WMSLayer that it should request its tiles using LatLon coordinates in the WGS84 datum (which should be supported by any server). Unfortunately it is not perfect since the deformation is quite important for low zoom levels (< 5 for the US). Higher than that, the deformation is not that visible. However, if you control the WMS server, it is recommended that you have a +false+ in this argument and setup the Mercator projection in your server if it is not done by default.
 
-<b>Note that need to include the wms-gs.js javascript file (in the <tt>lib/ym4r/google_maps/javascript</tt> folder) in your HTML page in order to make use of the WMSLayer functionality. It uses code by John Deck with participation of others (read the top of the javascript file to know more).</b>
+<b>Note that you need to include the wms-gs.js javascript file (in the <tt>lib/ym4r/google_maps/javascript</tt> folder) in your HTML page in order to make use of the WMSLayer functionality. It uses code by John Deck with the participation of others (read the top of the javascript file to know more).</b>
 
 Here is how to define a pretiled layer:
 	layer = PreTiledLayer.new("http://localhost:3000/tiles",
@@ -71,7 +71,7 @@ I tell the PreTiledLayer constructor where I can find the tiles, setup the Copyr
 You can add such a layer to a new map type the following way:
 	map_type = GMapType.new(layer,"My WMS")
 This is actually the simplest configuration possible. Your map type has only one data layer and is called "My WMS". You can add more that one layer: Either one that you have created yourself or existing ones. For example:
-	map_type = GMapType.new([GMapType::G_SATELLITE_MAP.get_tile_layers[0],layer,GMapType::G_HYBRID_MAP.get_tile_layers[1],
+	map_type = GMapType.new([GMapType::G_SATELLITE_MAP.get_tile_layers[0],layer,GMapType::G_HYBRID_MAP.get_tile_layers[1]],
 	"Test WMS")
 Here for the "Test WMS" map type, we also take the first layer of the "Satellite" map type in the background and overlay the second layer of the "Hybrid" map type (roads, country boundaries, etc... transparently overlaid on top of the preceding layers) so when the "Test WMS" map type is selected in the interface, all three layers will be displayed.
 
@@ -79,39 +79,41 @@ Finally to add a map type to a GMap:
 	@map.map_type_init(map_type)
 If you want to wipe out the existing map types (for example the 3 default ones), you can add a +false+ argument to the +map_type_init+ method and the +map_type+ will be the only one.
 
-You should not add new map types after you have setup the "Map type" control on the map or the new map types won't be taken into account.
 
-=====How to generated tiles for use in pretiled layers
+====How to generated tiles for use in pretiled layers
 
 The YM4R library provides 2 tools to generate tiles. They are in the +tools+ directory of the YM4R distribution.
 
-======tile_wms.rb
+=====tile_wms.rb
 This is to generate tiles from an already existing WMS server. It can be useful if you don't want to setup a permanent WMS server but still want to display your geographic data files (any format compatible with your WMS server can then be used). It can also be used to cache data from public servers, which can sometimes be very slow to answer requests. Run "ruby tile_wms.rb" to know what the options are. These are very similar to the ones passed to the WMSTiler constructor, although the <tt>-g</tt> (<tt>--gmap-setting</tt>) needs to be explained in more details. It uses the data that comes from this tool: http://www.onnyturf.com/google/latlontotile.html. Basically you need to center the map at the zoom you need to get your desired extent. When you are satisfied, the tool will give you the following data: the X and Y values of the upper left corner tile, 17 minus the zoom level (this is because the V2 of the Google Maps API reversed the zoom order), the number of horizontal and vertical tiles that you want. You will then pass to the <tt>-g</tt> options 5 integers in the order previously described, for example:
 	-g 300,383,7,3,2
 About the zoom level, if the tools tells you 7, you should pass 10 (17 - 7) to the <tt>-g</tt> option.
 
 Note that the zoom levels passed to the <tt>-z</tt> argument must be greater or equal to the zoom level passed to the <tt>-g</tt> argument.
 
-======tile_image.rb
+=====tile_image.rb
 This is to generate tiles from a local image. You will need the RMagick library for it to work. Basically, you should use this tool: http://open.atlas.free.fr/GMapsTransparenciesImgOver.php. You should have an image that will be displayed at the lowest zoom level that you want and use it with this tool. You can translate and scale the image until you are statisfied. When you are, you must click a link to gather information about the transformation needed for your image. You will need to pass this data to the <tt>-p</tt> option of the tool in the following order: X and Y of the top left corner of the map, 17 minus the zoom level, X and Y padding, scale. So for example, you will have the following argument:
 	-p 2503,3667,4,241,115,0.8702928870292888
 Again, about the zoom level, if the tool tells you 7, you should pass 10 (17 - 7) to the <tt>-p</tt> option.
 
 About the padding, I had a slight problem on Firefox: I needed to substract 10 to the X and Y paddings given by the online tool to have the correct one to pass to the <tt>-p</tt> option. Maybe it has something to do with the 10-pixel bands at the top and left of the page.
 
-You should pass as many images to the tool as you have zoom levels in the <tt>-z</tt> argument: Each image will be used for one zoom level. The string order of the names of the image files must match the order of their corresponding zoom level. Moreover, each image should be exactly twice bigger (in both width and height) as the one in the zoom level immediately preceding it. Also note that the zoom levels passed to the <tt>-z</tt> argument must be greater or equal to the zoom level passed to the <tt>-p</tt> argument.
+You should pass as many images to the tool as you have zoom levels in the <tt>-z</tt> argument: Each image will be used for one zoom level. The string order of the names of the image files must match the order of their corresponding zoom level. Moreover, each image should be exactly twice bigger (in both width and height) than the one in the zoom level immediately preceding it. Also note that the zoom levels passed to the <tt>-z</tt> argument must be greater or equal to the zoom level passed to the <tt>-p</tt> argument.
 
 By default, the tool will generate transparent borders. You can pass 4 integers (R, G, B and A) from 0 to 255 to the -b option to change that:
 	-b 255,123,456,42
 
+Here is an example of command line execution using the image at http://open.atlas.free.fr/GMapsTransparenciesImgOver.php. If you place it over the satellite images, you would get the following parameters: 2503,3667,13,149,76,1.0 (I have accounted for both the reversing of the zoom for v2 and the 10-pixel drift of the padding in Firefox). I have also created another version of the image, at double the size in width and height. Normally you should do the opposite: Get the highest resolution possible (if you scan the map) and downsize it for all the desired zoom levels until you get the image to use in this online tool (lowest zoom level). If you use vector graphics, you can easily create versions at different resolutions. I placed the 2 images (called MAP_zoom1.jpg for the smallest and MAP_zoom2.jpg for the biggest) in directory <tt>./input</tt>. And I launch the tool like this:
+	ruby tile_image.rb -o ./tiles -z 13..14 -p 2503,3667,13,149,76,1.0 ./input/*
+This will create tiles of the image for zoom levels 13 and 14. It should take just a few seconds.
 
-====Yahoo Maps Building Block API
+===Yahoo Maps Building Block API
 Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters detailed in the documentation for these API's. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
 
 To know what parameters to pass to the +get+ methods and what results you should expect, you should consult the documentation for the building block API's on Yahoo!'s website : http://developer.yahoo.com/maps/index.html#mapsBuildingBlocks . 
 
 Here are some examples and notes about using the different Building Block API's.
-=====Geocoding
+====Geocoding
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -121,7 +123,7 @@ Here is an example of request:
                                   :zip => "95014")
 +results+ is an array of Geocoding::Result objects. The API can return up to 50 results for one request. You can access the data in the result with attributes which are rubyfied versions of the XML elements forming the answer from the service: See the Yahoo! Geocoding documentation to know what these are and their meanings.
 
-=====Map Image
+====Map Image
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -132,7 +134,7 @@ Here is an example of request:
                                :image_type => "png")
 +result+ is a MapImage::Result object contains the URL for the requested image. You can download this image to a file by calling +download_to+ and passing a path.
 
-=====Traffic
+====Traffic
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -143,7 +145,7 @@ Here is an example of request:
                                :include_map => true)
 +results+ is a Traffic::ResultSet object (subclass of +Array+), containing Traffic::Result objects, each containing information about one traffic incident.
 
-=====Local Search 
+====Local Search 
 Here is an example of request:
 	require 'ym4r'
 	include Ym4r::BuildingBlock
@@ -154,24 +156,24 @@ Here is an example of request:
                                    :query => "chinese")
 +results+ is a LocalSearch::ResultSet object (subclass of +Array+), containing LocalSearch::Result objects, each containing information about one hit on the Yahoo! local search.
 
-====Yahoo! Maps JS-Flash API
+===Yahoo! Maps JS-Flash API
 Preliminary support for this API has been added. It works along the same lines as with the Google Maps API but it is not very polished currently.
 
-===Changes since last version
+==Changes since last version
 - Addition of support for user-defined layers (WMS and pretiled layers)
 - Addition of tools to generate tiles to be used with the pretiled layers
 
-===TODO
+==TODO
 - Add support for easy manipulation of external Google Maps-related libraries: Advanced tooltip manipulation, GeoRSS, Clusterer...
 - Documentation! Documentation! Documentation!
 - Tutorials
 - Finish the support for the Yahoo! Maps JS-Flash API
 
-===Disclaimer
+==Disclaimer
 This software is not endorsed in any way by Yahoo! or Google.
 
-===License
+==License
 YM4R is released under the MIT license.
 
-===Support
+==Support
 Any questions, enhancement proposals, bug notifications or corrections can be sent to mailto:guilhem.vellut+ym4r@gmail.com.

@@ -40,10 +40,15 @@ class TestGoogleMaps< Test::Unit::TestCase
     assert_equal("map.addHello(map.hoYoYo(123.4),map);",gmap.add_hello(gmap.ho_yo_yo(123.4),gmap).to_s)
   end
   
-  def test_declare_variable_marker
+  def test_declare_variable_latlng
     point = GLatLng.new([123.4,123.6])
     assert_equal("var point = new GLatLng(123.4,123.6);",point.declare("point"))
     assert_equal("point",point.variable)
+  end
+
+  def test_array_indexing
+    obj = Variable.new("obj")
+    assert_equal("obj[0]",obj[0].variable)
   end
   
 end

@@ -15,6 +15,7 @@ module Ym4r
         @container = container
         @variable = variable
         @init = []
+        @init_end = [] #for stuff that must be initialized at the end (controls)
         @global_init = []
       end
 
@@ -25,6 +26,7 @@ module Ym4r
         a
       end
      
+      #Outputs the <div id=...></div> which has been configured to contain the map
       def div
         "<div id=\"#{@container}\"></div>"
       end
@@ -41,12 +43,12 @@ module Ym4r
 
       #Initializes the controls: you can pass a hash with keys <tt>:small_map</tt>, <tt>:large_map</tt>, <tt>:small_zoom</tt>, <tt>:scale</tt>, <tt>:map_type</tt> and <tt>:overview_map</tt> and a boolean value as the value (usually true, since the control is not displayed by default)
       def control_init(controls = {})
-        @init << add_control(GSmallMapControl.new) if controls[:small_map]
-        @init << add_control(GLargeMapControl.new) if controls[:large_map]
-        @init << add_control(GSmallZoomControl.new) if controls[:small_zoom]
-        @init << add_control(GScaleControl.new) if controls[:scale]
-        @init << add_control(GMapTypeControl.new) if controls[:map_type]
-        @init << add_control(GOverviewMapControl.new) if controls[:overview_map]
+        @init_end << add_control(GSmallMapControl.new) if controls[:small_map]
+        @init_end << add_control(GLargeMapControl.new) if controls[:large_map]
+        @init_end << add_control(GSmallZoomControl.new) if controls[:small_zoom]
+        @init_end << add_control(GScaleControl.new) if controls[:scale]
+        @init_end << add_control(GMapTypeControl.new) if controls[:map_type]
+        @init_end << add_control(GOverviewMapControl.new) if controls[:overview_map]
       end
 
       #Initializes the initial center and zoom of the map. +center+ can be both a GLatLng object or a 2-float array.
@@ -113,6 +115,7 @@ module Ym4r
           html << "#{assign_to(@variable)}\n"
         end
         html << @init * "\n"
+        html << @init_end * "\n"
         html << "\n}\n}\n" if !no_load
         html << "window.onunload = GUnload;\n"
         html << "</script>" if !no_script_tag
