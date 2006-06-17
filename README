@@ -1,12 +1,18 @@
 =YM4R
-This is YM4R 0.2.1. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+This is YM4R 0.2.2. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps (including the Geocoding API) and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ==Operations
 ===Google Maps
 You can use the library to display Google maps easily with any ruby-based web framework. The version of the API used is v2. The library is engineered so updates to the map through Ajax are possible. I have made available 2 in-depth tutorials to show some of the functionalities of the library and how it can be integrated with GeoRuby and the Spatial Adapter for Rails:
 - http://thepochisuperstarmegashow.com/2006/06/02/ym4r-georuby-spatial-adapter-demo/
 - http://thepochisuperstarmegashow.com/2006/06/03/google-maps-yahoo-traffic-mash-up/
-Following is some notes about using the library:
+For the Geocoding API, see the section after this one.
+Following is some notes about manipulating Google Maps with the library:
+
+====Loading the library
+You should load the Google Maps part of YM4R this way:
+	require 'ym4r/google_maps'
+	include Ym4r::GoogleMaps
 
 ====Naming conventions
 The names of the Ruby class follow the ones in the JavaScript Google Maps API v2, except for GMap2, which in Ruby code is called simply GMap. To know what is possible to do with each class, you should refer to the documentation available on Google website.
@@ -80,12 +86,12 @@ Finally to add a map type to a GMap:
 If you want to wipe out the existing map types (for example the 3 default ones), you can add a +false+ argument to the +map_type_init+ method and the +map_type+ will be the only one.
 
 
-====How to generated tiles for use in pretiled layers
+====How to generate tiles for use in pretiled layers
 
-The YM4R library provides 2 tools to generate tiles. They are in the +tools+ directory of the YM4R distribution.
+The YM4R library provides 2 tools to generate tiles. They are in the +tools+ directory of the YM4R distribution. These tools can naturally be used to generate tiles even if you don't use the YM4R library to manipulate your Google Maps. You will just have to write the code to fetch the tiles by yourself.
 
 =====tile_wms.rb
-This is to generate tiles from an already existing WMS server. It can be useful if you don't want to setup a permanent WMS server but still want to display your geographic data files (any format compatible with your WMS server can then be used). It can also be used to cache data from public servers, which can sometimes be very slow to answer requests. Run "ruby tile_wms.rb" to know what the options are. These are very similar to the ones passed to the WMSTiler constructor, although the <tt>-g</tt> (<tt>--gmap-setting</tt>) needs to be explained in more details. It uses the data that comes from this tool: http://www.onnyturf.com/google/latlontotile.html. Basically you need to center the map at the zoom you need to get your desired extent. When you are satisfied, the tool will give you the following data: the X and Y values of the upper left corner tile, 17 minus the zoom level (this is because the V2 of the Google Maps API reversed the zoom order), the number of horizontal and vertical tiles that you want. You will then pass to the <tt>-g</tt> options 5 integers in the order previously described, for example:
+This is to generate tiles from an already existing WMS server. It can be useful if you don't want to setup a permanent WMS server but still want to display your geographic data files (any format compatible with your WMS server can then be used). It can also be used to cache data from public servers, which can sometimes be very slow to answer requests. Run "ruby tile_wms.rb" to know what the options are. These are very similar to the ones passed to the WMSTiler constructor, although the <tt>-g</tt> (<tt>--gmap-setting</tt>) needs to be explained in more details. It uses the data that comes from this tool: http://www.onnyturf.com/google/latlontotile.html. Basically you need to center the map at the zoom you need to get your desired extent. When you are satisfied, the tool will give you the following data: the X and Y values of the upper left corner tile, 17 minus the zoom level (this is because the V2 of the Google Maps API reversed the zoom order), the number of horizontal and vertical tiles that you want. You will then pass to the <tt>-g</tt> option 5 integers in the order previously described, for example:
 	-g 300,383,7,3,2
 About the zoom level, if the tools tells you 7, you should pass 10 (17 - 7) to the <tt>-g</tt> option.
 
@@ -107,6 +113,18 @@ Here is an example of command line execution using the image at http://open.atla
 	ruby tile_image.rb -o ./tiles -z 13..14 -p 2503,3667,13,149,76,1.0 ./input/*
 This will create tiles of the image for zoom levels 13 and 14. It should take just a few seconds.
 
+===Google Maps Geocoding API
+Note that you have to require it separately from the Google Maps API described above.
+Here is an example of request:
+	require 'ym4r/google_maps/geocoding'
+	include Ym4r::GoogleMaps
+	results = Geocoding::get("Rue Clovis Paris")
++results+ is an array of Geocoding::Placemark objects, with 2 additional attributes: +status+ and +name+. You should check if +status+ equals <tt>Geocoding::GEO_SUCCESS</tt> to know if the request has been successful. You can access the various data elements like this:
+	if results.status == Geocoding::GEO_SUCCESS
+		a = results[0].address
+		b = results[0].latlon
+	end
+
 ===Yahoo Maps Building Block API
 Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters detailed in the documentation for these API's. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
 
@@ -115,8 +133,8 @@ To know what parameters to pass to the +get+ methods and what results you should
 Here are some examples and notes about using the different Building Block API's.
 ====Geocoding
 Here is an example of request:
-	require 'ym4r'
-	include Ym4r::BuildingBlock
+	require 'ym4r/yahoo_maps/building_block'
+	include Ym4r::YahooMaps::BuildingBlock
 	results = Geocoding::get(:street => "1 Infinite Loop",
                              	  :city => "Cupertino",
                                   :state => "CA",
@@ -125,8 +143,8 @@ Here is an example of request:
 
 ====Map Image
 Here is an example of request:
-	require 'ym4r'
-	include Ym4r::BuildingBlock
+	require 'ym4r/yahoo_maps/building_block'
+	include Ym4r::YahooMaps::BuildingBlock
 	result = MapImage::get(:street => "1 Infinite Loop",
                                :city => "Cupertino",
                                :state => "CA",
@@ -136,8 +154,8 @@ Here is an example of request:
 
 ====Traffic
 Here is an example of request:
-	require 'ym4r'
-	include Ym4r::BuildingBlock
+	require 'ym4r/yahoo_maps/building_block'
+	include Ym4r::YahooMaps::BuildingBlock
 	results = Traffic::get(:street => "1 Infinite Loop",
                                :city => "Cupertino",
                                :state => "CA",
@@ -147,8 +165,8 @@ Here is an example of request:
 
 ====Local Search 
 Here is an example of request:
-	require 'ym4r'
-	include Ym4r::BuildingBlock
+	require 'ym4r/yahoo_maps/building_block'
+	include Ym4r::YahooMaps::BuildingBlock
 	results = LocalSearch::get(:street => "1 Infinite Loop",
                                    :city => "Cupertino",
                                    :state => "CA",
@@ -160,14 +178,13 @@ Here is an example of request:
 Preliminary support for this API has been added. It works along the same lines as with the Google Maps API but it is not very polished currently.
 
 ==Changes since last version
-- Addition of support for user-defined layers (WMS and pretiled layers)
-- Addition of tools to generate tiles to be used with the pretiled layers
+- Addition of a utility class to use the Google Maps API
 
 ==TODO
 - Add support for easy manipulation of external Google Maps-related libraries: Advanced tooltip manipulation, GeoRSS, Clusterer...
+- Add support to show and hide groups of overlays easily
 - Documentation! Documentation! Documentation!
 - Tutorials
-- Finish the support for the Yahoo! Maps JS-Flash API
 
 ==Disclaimer
 This software is not endorsed in any way by Yahoo! or Google.

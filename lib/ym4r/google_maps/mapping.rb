@@ -5,12 +5,21 @@ module Ym4r
       #The name of the variable in JavaScript space.
       attr_reader :variable
       
-      #Creates javascript code for missing methods
+      #Creates javascript code for missing methods + takes care of listeners
       def method_missing(name,*args)
-        args.collect! do |arg|
-          MappingObject.javascriptify_variable(arg)
+        str_name = name.to_s
+        if str_name =~ /^on_(.*)/
+          if args.length != 1
+            raise ArgumentError("Only 1 argument is allowed on on_ methods");
+          else
+            Variable.new("GEvent.addListener(#{to_javascript},\"#{javascriptify_method($1)}\",#{args[0]})")
+          end
+        else
+          args.collect! do |arg|
+            MappingObject.javascriptify_variable(arg)
+          end
+          Variable.new("#{to_javascript}.#{MappingObject.javascriptify_method(str_name)}(#{args.join(",")})")
         end
-        Variable.new("#{to_javascript}.#{MappingObject.javascriptify_method(name.to_s)}(#{args.join(",")})")
       end
             
       #Creates javascript code for array or hash indexing

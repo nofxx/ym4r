@@ -94,9 +94,28 @@ module Ym4r
         a << ",#{MappingObject.javascriptify_variable(@opacity)}" if @opacity
         a << ")"
       end
-      
     end
 
+    class GMarkerGroup
+      include MappingObject
+      attr_accessor :active, :markers, :markers_by_id
+
+      def initialize(active = true , markers = nil)
+        @active = active
+        @markers = []
+        @markers_by_id = {}
+        if markers.is_a?(Array)
+          @markers = markers
+        elsif markers.is_a?(Hash)
+          @markers_by_id = markers
+        end
+      end
+      
+      def create
+        "new GMarkerGroup(#{MappingObject.javascriptify_variable(@active)},#{MappingObject.javascriptify_variable(@markers)},#{MappingObject.javascriptify_variable(@markers_by_id)})"
+      end
+    end
+    
     #A basic Latitude/longitude point.
     class GLatLng 
       include MappingObject

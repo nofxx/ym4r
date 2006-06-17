@@ -16,6 +16,7 @@ module Ym4r
         @variable = variable
         @init = []
         @init_end = [] #for stuff that must be initialized at the end (controls)
+        @init_begin = [] #for stuff that must be initialized at the beginning (center + zoom)
         @global_init = []
       end
 
@@ -54,9 +55,9 @@ module Ym4r
       #Initializes the initial center and zoom of the map. +center+ can be both a GLatLng object or a 2-float array.
       def center_zoom_init(center, zoom)
         if center.is_a?(GLatLng)
-          @init << set_center(center,zoom)
+          @init_begin << set_center(center,zoom)
         else
-          @init << set_center(GLatLng.new(center),zoom)
+          @init_begin << set_center(GLatLng.new(center),zoom)
         end
       end
 
@@ -83,9 +84,20 @@ module Ym4r
         @global_init << code
       end
       
-      #Initializes an icon  and makes it globally accessible through the JavaScript variable of name +variable+.
+      #Deprecated. Use icon_global_init instead.
       def icon_init(icon , name)
+        icon_global_init(icon , name)
+      end
+      
+      #Initializes an icon  and makes it globally accessible through the JavaScript variable of name +variable+.
+      def icon_global_init(icon , name)
         declare_global_init(icon,name)
+      end
+      
+      #Declares the overlay globally with name +name+
+      def overlay_global_init(overlay,name)
+        declare_global_init(overlay,name)
+        @init << add_overlay(overlay)
       end
 
       #Globally declare a MappingObject with variable name "name"
@@ -93,7 +105,7 @@ module Ym4r
         @global_init << variable.declare(name)
       end
       
-      #Outputs the initialization code for the map. By default, it outputs the script tags, performs the initialization inside a function called +load+ and makes the map globally available.
+      #Outputs the initialization code for the map. By default, it outputs the script tags, performs the initialization in reponse to the onload event of the window and makes the map globally available.
       def to_html(options = {})
         no_load = options[:no_load]
         no_script_tag = options[:no_script_tag]
@@ -114,6 +126,7 @@ module Ym4r
         else
           html << "#{assign_to(@variable)}\n"
         end
+        html << @init_begin * "\n"
         html << @init * "\n"
         html << @init_end * "\n"
         html << "\n}\n}\n" if !no_load
@@ -128,7 +141,6 @@ module Ym4r
       end
     end
 
-    
   end
 end
 
