@@ -1,5 +1,5 @@
 =YM4R
-This is YM4R 0.2.2. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps (including the Geocoding API) and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+This is YM4R 0.3.1. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps (including the Geocoding API) and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ==Operations
 ===Google Maps
@@ -53,6 +53,30 @@ For example, if you want to add a marker to the map, you need to do a few things
 	page << @map.add_overlay(GMarker.new([123123.1,12313.76],:title => "Hello again!"))
 What is sent to the browser will be the fllowing JavaScript code:
 	map.addOverlay(new GMarker(new GLatLng(123123.1,12313.76),{title:\"Hello again!\"}))
+
+====GMarkerGroup
+A new type of GOverlay is available, called GMarkerGroup. To use it you would have to include in your HTML template the JavaScript file markerGroup.js found in the <tt>lib/ym4r/google_maps/javascript</tt> directory of the distribution.
+
+It is useful in 2 situations:
+- Display and undisplay a group of markers without referencing all of them. You just declare your marker group globally and call +activate+ and +deactivate+ on this group in response, for example, to clicks on links on your page.
+- Keeping an index of markers, for example, in order to show one of these markers in reponse to a click on a link (the way Google Local does with the results of the search).
+
+Here is how you would use it from your Ruby code:
+	@map = GMap.new("map_div")
+	marker1 = GMarker.new([123.55,123.988],:info_window => "Hello from 1!")
+	marker2 = GMarker.new([87.123,18.9],:info_window =>"Hello from 2!")
+	@map.overlay_global_init(GMarkerGroup.new(true,
+					1 => marker1,
+					2 => marker2),"myGroup")
+Here I have created an active (ie which is going to be displayed when the map is created) marker group called +myGroup+ with 2 markers, which I want to reference later. If I did not want to reference them later (I just want to be able to display and undisplay the marker group), I could have passed an array instead of the hash.
+
+Then in your template, you could have that:
+	<a href="#" onclick="myGroup.showMarker(1);return false;">Click here to display marker1</a>
+	<a href="#" onclick="myGroup.showMarker(2);return false;">Click here to display marker2</a>
+	<%= @map.to_div %>
+When you click on one of the links, the corresponding marker has its info window displayed.
+
+You can call +activate+ and +deactivate+ to display or undisplay a group of markers. You can add new markers with <tt>addMarker(marker,id)</tt>. Again if you don't care about referencing the marker, you don't need to pass an id. If the marker group is active, the newly added marker will be displayed immediately. Otherwise it will be displayed the next time the group is activated. Finally, since it is an overlay, the group will be removed when calling clearOverlays on the GMap object.
 
 ====Adding new map types
 It is now possible to easily add new map types, on top of the already existing ones, like G_SATELLITE_MAP or G_NORMAL_MAP. The imagery for these new map types can come from layers of the standard map types or can be taken either from a WMS server or from pretiled images on a server (that can be generated with a tool that comes with the library). 
