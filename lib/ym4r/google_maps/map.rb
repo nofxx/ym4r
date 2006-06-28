@@ -117,7 +117,8 @@ module Ym4r
         #put the functions in a separate javascript file to be included in the page
         html << "function addInfoWindowToMarker(marker,info){\nGEvent.addListener(marker, \"click\", function() {\nmarker.openInfoWindowHtml(info);\n});\nreturn marker;\n}\n"
         html << "function addInfoWindowTabsToMarker(marker,info){\nGEvent.addListener(marker, \"click\", function() {\nmarker.openInfoWindowTabsHtml(info);\n});\nreturn marker;\n}\n"
-        html << "function addPropertiesToLayer(layer,getTile,copyright,opacity){\nlayer.getTileUrl = getTile;\nlayer.getCopyright = copyright;\nlayer.getOpacity = opacity;\nreturn layer;\n}\n"
+        html << "function addPropertiesToLayer(layer,getTile,copyright,opacity,isPng){\nlayer.getTileUrl = getTile;\nlayer.getCopyright = copyright;\nlayer.getOpacity = opacity;\nlayer.isPng = isPng;\nreturn layer;\n}\n"
+        html << "function addOptionsToIcon(icon,options){\nfor(var k in options){\nicon[k] = options[k];\n}\nreturn icon;\n}\n"
         html << @global_init * "\n"
         html << "var #{@variable};\n" if !no_declare and !no_global
         html << "window.onload = function() {\nif (GBrowserIsCompatible()) {\n" if !no_load

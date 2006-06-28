@@ -56,18 +56,15 @@ module Ym4r
       #Creates a GIcon.
       def create
         if @copy_base
-          "new GIcon(#{MappingObject.javascriptify_variable(@copy_base)})"
+          c = "new GIcon(#{MappingObject.javascriptify_variable(@copy_base)})"
         else
-          "new GIcon()"
+          c = "new GIcon()"
         end
-      end
-      #Declares a GIcon. It is necessary to declare an icon before using it, since it is the only way to set up its attributes.
-      def declare(variable)
-        decl = super(variable) + "\n"
-        @options.each do |key,value|
-          decl << "#{to_javascript}.#{MappingObject.javascriptify_method(key.to_s)} = #{MappingObject.javascriptify_variable(value)};\n"
+        if !options.empty?
+          "addOptionsToIcon(#{c},#{MappingObject.javascriptify_variable(@options)})"
+        else
+          c
         end
-        decl
       end
     end
      
@@ -96,6 +93,7 @@ module Ym4r
       end
     end
 
+    #A GOverlay representing a group of GMarkers. The GMarkers can be identified with an id, which can be used to show the info window of a specific marker, in reponse, for example, to a click on a link. The whole group can be shown on and off at once. It should be declared global at initialization time to be useful.
     class GMarkerGroup
       include MappingObject
       attr_accessor :active, :markers, :markers_by_id
@@ -114,6 +112,31 @@ module Ym4r
       def create
         "new GMarkerGroup(#{MappingObject.javascriptify_variable(@active)},#{MappingObject.javascriptify_variable(@markers)},#{MappingObject.javascriptify_variable(@markers_by_id)})"
       end
+    end
+
+    #Makes the link with the Clusterer2 library by Jef Poskanzer (slightly modified though). Is a GOverlay making clusters out of its GMarkers, so that GMarkers very close to each other appear as one when the zoom is low. When the zoom gets higher, the individual markers are drawn.
+    class Clusterer
+      include MappingObject
+      attr_accessor :markers,:options
+
+      def initialize(markers = [], options = {})
+        @markers = markers
+        @options = options
+      end
+
+      def create 
+        js_marker = '[' + @markers.collect do |marker|
+          add_description(marker)
+        end.join(",") + ']'
+
+        "new Clusterer(#{js_marker},#{MappingObject.javascriptify_variable(@options[:icon] || GIcon::DEFAULT)},#{@options[:max_visible_markers] || 150},#{@options[:grid_size] || 5},#{@options[:min_markers_per_cluster] || 5},#{@options[:max_lines_per_info_box] || 10})"
+      end
+            
+      private
+      def add_description(marker)
+        "addDescriptionToMarker(#{MappingObject.javascriptify_variable(marker)},#{MappingObject.javascriptify_variable(marker.options[:description] || marker.options[:title] || '')})"
+      end
+      
     end
     
     #A basic Latitude/longitude point.

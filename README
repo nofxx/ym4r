@@ -1,5 +1,5 @@
 =YM4R
-This is YM4R 0.3.1. The goal of YM4R (which naturally means Yellow Maps For Ruby...) is to ease the use of the Google Maps (including the Geocoding API) and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
+This is YM4R 0.3.2. The goal of YM4R (Yellow Maps For Ruby) is to ease the use of the Google Maps (including the Geocoding API) and Yahoo! Maps API's (including the Geocoding, Map Image, Traffic and Local Search API's) from Ruby and Rails.
 
 ==Operations
 ===Google Maps
@@ -78,6 +78,31 @@ When you click on one of the links, the corresponding marker has its info window
 
 You can call +activate+ and +deactivate+ to display or undisplay a group of markers. You can add new markers with <tt>addMarker(marker,id)</tt>. Again if you don't care about referencing the marker, you don't need to pass an id. If the marker group is active, the newly added marker will be displayed immediately. Otherwise it will be displayed the next time the group is activated. Finally, since it is an overlay, the group will be removed when calling clearOverlays on the GMap object.
 
+====Clusterer
+A Clusterer is a type of overlay that contains a potentially very large group of markers. It is engineered so markers close to each other and undistinguishable from each other at some level of zoom, appear as only one marker on the map at that level of zoom. Therefore it is possible to have a very large number of markers on the map at the same time and not having the map crawl to a halt in order to display them. It has been slightly modified from Jef Poskanzer's original Clusterer2 code (see http://www.acme.com/javascript/ for the original version). The major difference with that version is that, in YM4R, the clusterer is a GOverlay and can therefore be added to the map with <tt>map.addOverlay(clusterer)</tt> and is cleared along with the rest of overlays when <tt>map.clearOverlays()</tt> is called.
+
+<b>In order to use a clusterer, you should include in your template page the clusterer.js file that can be found in the <tt>lib/ym4r/gogle_maps/javascript/</tt> directory of the YM4R distribution.</b>
+
+To create a clusterer, you should first create an array of all the GMarkers that you want to include in the clusterer (you can still add more after the clusterer has been added to the map though). When GMarkers close together are grouped in one cluster (represented by another marker on the map) and the user clicks on the cluster marker, a list of markers in the cluster is displayed in the info windo with a description: By default it is equal to the +title+ of the markers (which is also displayed as a tooltip when hovering on the marker with the mouse). If you don't want that, you can also pass to the GMarker constructor a key-value pair with key <tt>:description</tt> to have a description different from the title. For example, here is how you would create a clusterer:
+	markers = [GMarker.new([37.8,-90.4819],:info_window => "Hello",:title => "HOYOYO"),
+                  GMarker.new([37.844,-90.47819],:info_window => "Namaste",:description => "Chopoto" , :title => "Ay"),
+		  GMarker.new([37.83,-90.456619],:info_window => "Bonjour",:title => "Third"),
+	]
+	clusterer = Clusterer.new(markers,:max_visible_markers => 2)
+Of course, with only 3 markers, the whole clusterer thing is totally useless. Usually, using the clusterer starts being interesting with hundreds of markers. The options to pass the clusterer are:
+- <tt>:max_visible_markers</tt>: Below this number of markers, no clustering is performed. Defaults to 150.
+- <tt>:grid_size</tt>: The clusterer divides the visible area into a grid of this size. Defaults to 5.
+- <tt>:min_markers_per_cluster</tt>: Below this number of markers a cluster is not formed. Defaults to 5.
+- <tt>:max_lines_per_info_box</tt>: Number of lines to display in the info window displayed when a cluster is clicked on by the user. Defaults to 10.
+- <tt>:icon</tt>: Icon to be used to mark a cluster. Defaults to G_DEFAULT_ICON (the classic red marker).
+
+Then to add the clusterer to the map at initialization time, you proceed as with a classic overlay:
+	@map.overlay_init clusterer
+
+To add new markers in RJS (if the clusterer has been declared globally with overlay_global_init), you should do this:
+	page << clusterer.add_marker(marker,description)
+In this case, the <tt>:description</tt> passed to the GMarker contructor will not be taken into account. Only the +description+ passed in the call to +add_marker+ will.
+
 ====Adding new map types
 It is now possible to easily add new map types, on top of the already existing ones, like G_SATELLITE_MAP or G_NORMAL_MAP. The imagery for these new map types can come from layers of the standard map types or can be taken either from a WMS server or from pretiled images on a server (that can be generated with a tool that comes with the library). 
 
@@ -96,9 +121,26 @@ Here is how to define a pretiled layer:
 	layer = PreTiledLayer.new("http://localhost:3000/tiles",
 	{'prefix' => "Map C 2006", 'copyright_texts' => ["Open Atlas"]},
 	13..13,0.7,"gif")
-I tell the PreTiledLayer constructor where I can find the tiles, setup the Copyright string, the valid zooms for the map, the opacity and the format. Tiles must have standardized names: <tt>tile_#{zoom}_#{x_tile}_#{y_tile}.#{format}</tt> (here the format is "gif"). You can use some tools (see below) to generate tiles in this format either from local maps or from WMS servers (useful to create tiles from geographic data files without having to run a map server or to cache images from slow servers).
+I tell the PreTiledLayer constructor where I can find the tiles, setup the Copyright string, the valid zooms for the map, the opacity and the format. Tiles must have standardized names: <tt>tile_#{zoom}_#{x_tile}_#{y_tile}.#{format}</tt> (here the format is "gif"). You can use some tools (see below) to generate tiles in this format either from local maps or from WMS servers (useful to create tiles from geographic data files without having to run a map server or to cache images from slow servers). 
 
-You can add such a layer to a new map type the following way:
+Instead of having the tiles requested directly, you can also decide to have an action on the server which takes care of it. You can used the class PreTiledLayerFromAction for this. In this case, the first argument of the constructor is an url of an action. The arguments +x+, +y+ and +z+ will be passed to it.
+	layer = PreTiledLayerFromAction.new(url_for(:action => :get_tile),
+	{'prefix' => "Map C 2006", 'copyright_texts' => ["Open Atlas"]},
+	13..14,0.7,"png")
+The other constructor arguments have the same meaning as PreTiledLayer. Here is an uninteresting example of action that serves tiles:
+	def get_tile
+          x = @params[:x]
+    	  y = @params[:y]
+    	  z = @params[:z]
+    	  begin
+            send_file "#{RAILS_ROOT}/public/tiles/tile_#{z}_#{x}_#{y}.png" , 
+		:type => 'image/png', :disposition => 'inline'
+          rescue Exception
+            render :nothing => true
+          end
+        end
+
+You can add a layer to a new map type the following way:
 	map_type = GMapType.new(layer,"My WMS")
 This is actually the simplest configuration possible. Your map type has only one data layer and is called "My WMS". You can add more that one layer: Either one that you have created yourself or existing ones. For example:
 	map_type = GMapType.new([GMapType::G_SATELLITE_MAP.get_tile_layers[0],layer,GMapType::G_HYBRID_MAP.get_tile_layers[1]],
@@ -202,19 +244,22 @@ Here is an example of request:
 Preliminary support for this API has been added. It works along the same lines as with the Google Maps API but it is not very polished currently.
 
 ==Changes since last version
-- Addition of a utility class to use the Google Maps API
+- Addition of Clusterer class
+- Addition of a PreTiledLayerFromAction class
 
 ==TODO
-- Add support for easy manipulation of external Google Maps-related libraries: Advanced tooltip manipulation, GeoRSS, Clusterer...
-- Add support to show and hide groups of overlays easily
+- Add support for easy manipulation of external Google Maps-related libraries: Advanced tooltip manipulation, GeoRSS, KML,...
 - Documentation! Documentation! Documentation!
 - Tutorials
 
 ==Disclaimer
 This software is not endorsed in any way by Yahoo! or Google.
 
+==Acknowledgement
+YM4R bundles JavaScript libraries from John Deck (WMS layers on Google Maps) and Jef Poskanzer (Clusterer on Google Maps).
+
 ==License
-YM4R is released under the MIT license.
+YM4R is released under the MIT license. The <tt>clusterer.js</tt> file is redistributed with a different license (but still compatible with the MIT license). Check the top of the file in <tt>lib/ym4r/google_maps/javascript</tt> to know more.
 
 ==Support
 Any questions, enhancement proposals, bug notifications or corrections can be sent to mailto:guilhem.vellut+ym4r@gmail.com.
