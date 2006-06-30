@@ -20,10 +20,21 @@ module Ym4r
         @global_init = []
       end
 
-      #Outputs the header necessary to use the Google Maps API. By default, it also outputs a style declaration for VML elements.
+      #Deprecated. Use the static version instead.
       def header(with_vml = true)
-        a = "<script src=\"http://maps.google.com/maps?file=api&v=2&key=#{API_KEY}\" type=\"text/javascript\"></script>\n"
-        a << "<style type=\"text/css\">\n v\:* { behavior:url(#default#VML);}\n</style>" if with_vml
+        GMap.header(:with_vml => with_vml)
+      end
+
+      #Outputs the header necessary to use the Google Maps API. By default, it also outputs a style declaration for VML elements (can be changed with the option <tt>:with_vml</tt>). You can also pass a host with the <tt>:host</tt> option: If you use Rails, you should pass <tt>:host => @request.host</tt>. This host must have a corresponding API key in the config.yml file. If you don't care about multiple hosts or want to manage the keys yourself, you should not pass the <tt>:host</tt> option and the config.yml should only contain a single API key.
+      def self.header(options = {})
+        options[:with_vml] = true unless options.has_key?(:with_vml)
+        if options.has_key?(:host)
+          api_key = API_KEY[options[:host]]
+        else
+          api_key = API_KEY
+        end
+        a = "<script src=\"http://maps.google.com/maps?file=api&v=2&key=#{api_key}\" type=\"text/javascript\"></script>\n"
+        a << "<style type=\"text/css\">\n v\:* { behavior:url(#default#VML);}\n</style>" if options[:with_vml]
         a
       end
      

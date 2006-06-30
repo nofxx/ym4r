@@ -24,7 +24,7 @@ spec = Gem::Specification::new do |s|
   s.platform = Gem::Platform::RUBY
 
   s.name = 'ym4r'
-  s.version = "0.3.2"
+  s.version = "0.4.1"
   s.summary = "Using Google Maps and Yahoo! Maps from Ruby and Rails"
   s.description = <<EOF
 EOF

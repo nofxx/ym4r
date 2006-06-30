@@ -106,6 +106,7 @@ module Ym4r
     #Used to bind a ruby variable to an already existing JavaScript one. It doesn't have to be a variable in the sense "var variable" but it can be any valid JavaScript expression that has a value.
     class Variable
       include MappingObject
+      
       def initialize(variable)
         @variable = variable
       end
@@ -117,6 +118,8 @@ module Ym4r
       def to_s
         @variable + ";"
       end
+
+      UNDEFINED = Variable.new("undefined")
     end
   end
 end
