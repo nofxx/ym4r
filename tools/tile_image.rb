@@ -1,5 +1,5 @@
 $:.unshift(File.dirname(__FILE__) + '/../lib')
-require 'ym4r/google_maps/tiler/image_tiler'
+require 'ym4r/google_maps/image_tiler'
 include Ym4r::GoogleMaps::Tiler
 
 require 'optparse'
