@@ -46,10 +46,10 @@ opts = OptionParser.new do |opts|
   opts.on("-g","--gmap-setting SETTING",WmsTiler::FurthestZoom,"Corner coordinates, furthest zoom level, tile width and height") do |fz|
     options.furthest_zoom = fz
   end
-  opts.on("-w","--[no-]geographic","Query the WMS server with LatLon coordinates isntead of using the Mercator projection") do |g|
+  opts.on("-w","--[no-]geographic","Query the WMS server with LatLon coordinates instead of using the Mercator projection") do |g|
     options.geographic = g
   end
-  opts.on("-e", "--epsg SRS","SRS to query the WMS server. Should be a the SRS id of a Simple Mercator projection. Can vary between WMS servers. Is 54004 (Simple Mercator for Mapserver) by default") do |srs|
+  opts.on("-e", "--epsg SRS","SRS to query the WMS server. Should be a the SRS id of a Simple Mercator projection. Can vary between WMS servers. Is 54004 (Simple Mercator for Mapserver) by default. For GeoServer use 41001.") do |srs|
     options.srs = srs
                     
   end

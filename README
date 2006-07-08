@@ -1,5 +1,5 @@
 =YM4R
-This is YM4R 0.5.1. YM4R has features to ease the use of the Google Maps Geocoding API and the Yahoo! Maps building block API's from Ruby. It also offers 2 tools to create tiles to be used with user-defined layers in Google Maps.
+This is YM4R 0.5.1. YM4R has features to ease the use of the Google Maps Geocoding API and the Yahoo! Maps building block API's from Ruby. It also offers 2 tools to create tiles to be used with user-defined layers in Google Maps. If you are looking to use the main Google Maps API from your Rails application, you should use the YM4R/GM plugin for Rails (http://thepochisuperstarmegashow.com/projects/#ym4r).
 
 ==Relation between the YM4R gem and the YM4R/GM plugin for Rails
 They are completely independent from each other.
@@ -27,7 +27,8 @@ then:
 
 Then copy the content of the lib directory of the gem into the lib directory of your rails application: You should have in <tt>RAILS_ROOT/lib</tt> the <tt>ym4.rb</tt> file and the <tt>ym4r</tt> directory (plus a tasks folder; which was already there before). Contrary to what is done for a plugin, you will still need to require and include in your application the files and modules you are interested in.
 
-==Google Maps Geocoding API
+==Operations
+===Google Maps Geocoding API
 Here is an example of request:
 	require 'ym4r/google_maps/geocoding'
 	include Ym4r::GoogleMaps
@@ -38,13 +39,13 @@ Here is an example of request:
 		b = results[0].latlon
 	end
 
-==Yahoo Maps Building Block API
+===Yahoo Maps Building Block API
 Building Block API's (Geocoding, Map Image, Traffic and Local Search) are supported. You have to pass to the +get+ method of the module a hash whose keys are a rubyfied version of the request parameters detailed in the documentation for these API's. You get back a ruby object, with accessors that let you get the returned data in a easy way. You get an exception if not all the parameters have been passed, if the connection to the service could not be made or if the parameters you have passed are of the incorrect value.
 
 To know what parameters to pass to the +get+ methods and what results you should expect, you should consult the documentation for the building block API's on Yahoo!'s website : http://developer.yahoo.com/maps/index.html#mapsBuildingBlocks . 
 
 Here are some examples and notes about using the different Building Block API's.
-===Geocoding
+====Geocoding
 Here is an example of request:
 	require 'ym4r/yahoo_maps/building_block'
 	include Ym4r::YahooMaps::BuildingBlock
@@ -54,7 +55,7 @@ Here is an example of request:
                                   :zip => "95014")
 +results+ is an array of Geocoding::Result objects. The API can return up to 50 results for one request. You can access the data in the result with attributes which are rubyfied versions of the XML elements forming the answer from the service: See the Yahoo! Geocoding documentation to know what these are and their meanings.
 
-===Map Image
+====Map Image
 Here is an example of request:
 	require 'ym4r/yahoo_maps/building_block'
 	include Ym4r::YahooMaps::BuildingBlock
@@ -65,7 +66,7 @@ Here is an example of request:
                                :image_type => "png")
 +result+ is a MapImage::Result object contains the URL for the requested image. You can download this image to a file by calling +download_to+ and passing a path.
 
-====Traffic
+=====Traffic
 Here is an example of request:
 	require 'ym4r/yahoo_maps/building_block'
 	include Ym4r::YahooMaps::BuildingBlock
@@ -76,7 +77,7 @@ Here is an example of request:
                                :include_map => true)
 +results+ is a Traffic::ResultSet object (subclass of +Array+), containing Traffic::Result objects, each containing information about one traffic incident.
 
-===Local Search 
+====Local Search 
 Here is an example of request:
 	require 'ym4r/yahoo_maps/building_block'
 	include Ym4r::YahooMaps::BuildingBlock
@@ -87,18 +88,18 @@ Here is an example of request:
                                    :query => "chinese")
 +results+ is a LocalSearch::ResultSet object (subclass of +Array+), containing LocalSearch::Result objects, each containing information about one hit on the Yahoo! local search.
 
-==Tiling: Generating tiles to be used with pretiled layers in Google Maps
+===Tiling: Generating tiles to be used with pretiled layers in Google Maps
 
 The YM4R library provides 2 tools to generate tiles. They are in the +tools+ directory of the YM4R gem distribution. 
 
-===tile_wms.rb
-This is to generate tiles from an already existing WMS server. It can be useful if you don't want to setup a permanent WMS server but still want to display your geographic data files (any format compatible with your WMS server can then be used). It can also be used to cache data from public servers, which can sometimes be very slow to answer requests. Run "ruby tile_wms.rb" to know what the options are. These are very similar to the ones passed to the WMSTiler constructor, although the <tt>-g</tt> (<tt>--gmap-setting</tt>) needs to be explained in more details. It uses the data that comes from this tool: http://www.onnyturf.com/google/latlontotile.html. Basically you need to center the map at the zoom you need to get your desired extent. When you are satisfied, the tool will give you the following data: the X and Y values of the upper left corner tile, 17 minus the zoom level (this is because the V2 of the Google Maps API reversed the zoom order), the number of horizontal and vertical tiles that you want. You will then pass to the <tt>-g</tt> option 5 integers in the order previously described, for example:
+====tile_wms.rb
+This is to generate tiles from an already existing WMS server. It can be useful if you don't want to setup a permanent WMS server but still want to display your geographic data files (any format compatible with your WMS server can then be used). It can also be used to cache data from public servers, which can sometimes be very slow to answer requests. Run <tt>ruby tile_wms.rb -h</tt> to know what the options are. Most are self-explanatory, although the <tt>-g</tt> (<tt>--gmap-setting</tt>) needs to be explained in more details. It uses the data that comes from this tool: http://www.onnyturf.com/google/latlontotile.html. Basically you need to center the map at the zoom you need to get your desired extent. When you are satisfied, the tool will give you the following data: the X and Y values of the upper left corner tile, 17 minus the zoom level (this is because the V2 of the Google Maps API reversed the zoom order), the number of horizontal and vertical tiles that you want. You will then pass to the <tt>-g</tt> option 5 integers in the order previously described, for example:
 	-g 300,383,7,3,2
 About the zoom level, if the tools tells you 7, you should pass 10 (17 - 7) to the <tt>-g</tt> option.
 
 Note that the zoom levels passed to the <tt>-z</tt> argument must be greater or equal to the zoom level passed to the <tt>-g</tt> argument.
 
-===tile_image.rb
+====tile_image.rb
 This is to generate tiles from a local image. You will need the RMagick library for it to work. Basically, you should use this tool: http://open.atlas.free.fr/GMapsTransparenciesImgOver.php. You should have an image that will be displayed at the lowest zoom level that you want and use it with this tool. You can translate and scale the image until you are statisfied. When you are, you must click a link to gather information about the transformation needed for your image. You will need to pass this data to the <tt>-p</tt> option of the tool in the following order: X and Y of the top left corner of the map, 17 minus the zoom level, X and Y padding, scale. So for example, you will have the following argument:
 	-p 2503,3667,4,241,115,0.8702928870292888
 Again, about the zoom level, if the tool tells you 7, you should pass 10 (17 - 7) to the <tt>-p</tt> option.
