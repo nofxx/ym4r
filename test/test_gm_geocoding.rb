@@ -7,8 +7,8 @@ include Ym4r::GoogleMaps
 
 class TestGmGeocoding< Test::Unit::TestCase
   def test_google_maps_geocoding
-    placemarks = Geocoding.get("Rue Clovis Paris")
-    assert_equal(Geocoding::GEO_SUCCESS,placemarks.status)
+    placemarks = Ym4r::GoogleMaps::Geocoding.get("Rue Clovis Paris")
+    assert_equal(Ym4r::GoogleMaps::Geocoding::GEO_SUCCESS,placemarks.status)
     assert_equal(1,placemarks.length)
     placemark = placemarks[0]
     assert_equal("FR",placemark.country_code)
@@ -17,11 +17,12 @@ class TestGmGeocoding< Test::Unit::TestCase
   end
 
   def test_google_maps_pakistan
-    placemarks = Geocoding.get("Lahore PK")
-    assert_equal(Geocoding::GEO_SUCCESS,placemarks.status)
+    placemarks = Ym4r::GoogleMaps::Geocoding.get("Lahore PK")
+    assert_equal(Ym4r::GoogleMaps::Geocoding::GEO_SUCCESS,placemarks.status)
     assert_equal(1,placemarks.length)
     placemark = placemarks[0]
     assert_equal("PK",placemark.country_code)
     assert_equal("Lahore",placemark.locality)
     assert_equal("",placemark.thoroughfare)
   end
+end

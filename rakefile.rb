@@ -24,8 +24,8 @@ spec = Gem::Specification::new do |s|
   s.platform = Gem::Platform::RUBY
 
   s.name = 'ym4r'
-  s.version = "0.4.1"
-  s.summary = "Using Google Maps and Yahoo! Maps from Ruby and Rails"
+  s.version = "0.5.1"
+  s.summary = "Helping the use of Google Maps and Yahoo! Maps API's from Ruby and Rails"
   s.description = <<EOF
 EOF
   s.author = 'Guilhem Vellut'
@@ -34,7 +34,7 @@ EOF
   
   s.requirements << 'none'
   s.require_path = 'lib'
-  s.files = FileList["lib/**/*.rb", "lib/**/*.yml","lib/**/*.js","tools/**/*.rb","test/**/*.rb", "README","MIT-LICENSE","rakefile.rb"]
+  s.files = FileList["lib/**/*.rb", "lib/**/*.yml","tools/**/*.rb","test/**/*.rb", "README","MIT-LICENSE","rakefile.rb"]
   s.test_files = FileList['test/test*.rb']
 
   s.has_rdoc = true
