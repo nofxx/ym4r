@@ -1,5 +1,5 @@
 =YM4R
-This is YM4R 0.5.2. YM4R has features to ease the use of the Google Maps Geocoding API and the Yahoo! Maps building block API's from Ruby. It also offers 2 tools to create tiles to be used with user-defined layers in Google Maps. If you are looking to use the main Google Maps API from your Rails application, you should use the YM4R/GM plugin for Rails (http://thepochisuperstarmegashow.com/projects/#ym4r).
+This is YM4R 0.5.2. YM4R has features to ease the use of the Google Maps Geocoding API and the Yahoo! Maps building block API's from Ruby. If you are looking to use the main Google Maps API from your Rails application, you should use the YM4R/GM plugin for Rails (http://thepochisuperstarmegashow.com/projects/#ym4r).
 
 ==Relation between the YM4R gem and the YM4R/GM plugin for Rails
 They are completely independent from each other.
