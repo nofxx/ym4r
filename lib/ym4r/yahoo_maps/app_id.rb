@@ -1,5 +1,5 @@
 module Ym4r
   module YahooMaps
-    APP_ID = "YahooMaps4Ruby"
+    APP_ID = "YellowMaps4R"
   end
 end

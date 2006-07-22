@@ -1,5 +1,5 @@
 =YM4R
-This is YM4R 0.5.1. YM4R has features to ease the use of the Google Maps Geocoding API and the Yahoo! Maps building block API's from Ruby. It also offers 2 tools to create tiles to be used with user-defined layers in Google Maps. If you are looking to use the main Google Maps API from your Rails application, you should use the YM4R/GM plugin for Rails (http://thepochisuperstarmegashow.com/projects/#ym4r).
+This is YM4R 0.5.2. YM4R has features to ease the use of the Google Maps Geocoding API and the Yahoo! Maps building block API's from Ruby. It also offers 2 tools to create tiles to be used with user-defined layers in Google Maps. If you are looking to use the main Google Maps API from your Rails application, you should use the YM4R/GM plugin for Rails (http://thepochisuperstarmegashow.com/projects/#ym4r).
 
 ==Relation between the YM4R gem and the YM4R/GM plugin for Rails
 They are completely independent from each other.
@@ -88,36 +88,10 @@ Here is an example of request:
                                    :query => "chinese")
 +results+ is a LocalSearch::ResultSet object (subclass of +Array+), containing LocalSearch::Result objects, each containing information about one hit on the Yahoo! local search.
 
-===Tiling: Generating tiles to be used with pretiled layers in Google Maps
-
-The YM4R library provides 2 tools to generate tiles. They are in the +tools+ directory of the YM4R gem distribution. 
-
-====tile_wms.rb
-This is to generate tiles from an already existing WMS server. It can be useful if you don't want to setup a permanent WMS server but still want to display your geographic data files (any format compatible with your WMS server can then be used). It can also be used to cache data from public servers, which can sometimes be very slow to answer requests. Run <tt>ruby tile_wms.rb -h</tt> to know what the options are. Most are self-explanatory, although the <tt>-g</tt> (<tt>--gmap-setting</tt>) needs to be explained in more details. It uses the data that comes from this tool: http://www.onnyturf.com/google/latlontotile.html. Basically you need to center the map at the zoom you need to get your desired extent. When you are satisfied, the tool will give you the following data: the X and Y values of the upper left corner tile, 17 minus the zoom level (this is because the V2 of the Google Maps API reversed the zoom order), the number of horizontal and vertical tiles that you want. You will then pass to the <tt>-g</tt> option 5 integers in the order previously described, for example:
-	-g 300,383,7,3,2
-About the zoom level, if the tools tells you 7, you should pass 10 (17 - 7) to the <tt>-g</tt> option.
-
-Note that the zoom levels passed to the <tt>-z</tt> argument must be greater or equal to the zoom level passed to the <tt>-g</tt> argument.
-
-====tile_image.rb
-This is to generate tiles from a local image. You will need the RMagick library for it to work. Basically, you should use this tool: http://open.atlas.free.fr/GMapsTransparenciesImgOver.php. You should have an image that will be displayed at the lowest zoom level that you want and use it with this tool. You can translate and scale the image until you are statisfied. When you are, you must click a link to gather information about the transformation needed for your image. You will need to pass this data to the <tt>-p</tt> option of the tool in the following order: X and Y of the top left corner of the map, 17 minus the zoom level, X and Y padding, scale. So for example, you will have the following argument:
-	-p 2503,3667,4,241,115,0.8702928870292888
-Again, about the zoom level, if the tool tells you 7, you should pass 10 (17 - 7) to the <tt>-p</tt> option.
-
-About the padding, I had a slight problem on Firefox: I needed to substract 10 to the X and Y paddings given by the online tool to have the correct one to pass to the <tt>-p</tt> option. Maybe it has something to do with the 10-pixel bands at the top and left of the page.
-
-You should pass as many images to the tool as you have zoom levels in the <tt>-z</tt> argument: Each image will be used for one zoom level. The string order of the names of the image files must match the order of their corresponding zoom level. Moreover, each image should be exactly twice bigger (in both width and height) than the one in the zoom level immediately preceding it. Also note that the zoom levels passed to the <tt>-z</tt> argument must be greater or equal to the zoom level passed to the <tt>-p</tt> argument.
-
-By default, the tool will generate transparent borders. You can pass 4 integers (R, G, B and A) from 0 to 255 to the -b option to change that:
-	-b 255,123,456,42
-
-Here is an example of command line execution using the image at http://open.atlas.free.fr/GMapsTransparenciesImgOver.php. If you place it over the satellite images, you would get the following parameters: 2503,3667,13,149,76,1.0 (I have accounted for both the reversing of the zoom for v2 and the 10-pixel drift of the padding in Firefox). I have also created another version of the image, at double the size in width and height. Normally you should do the opposite: Get the highest resolution possible (if you scan the map) and downsize it for all the desired zoom levels until you get the image to use in this online tool (lowest zoom level). If you use vector graphics, you can easily create versions at different resolutions. I placed the 2 images (called MAP_zoom1.jpg for the smallest and MAP_zoom2.jpg for the biggest) in directory <tt>./input</tt>. And I launch the tool like this:
-	ruby tile_image.rb -o ./tiles -z 13..14 -p 2503,3667,13,149,76,1.0 ./input/*
-This will create tiles of the image for zoom levels 13 and 14. It should take just a few seconds.
 
 ==Changes since last version
-- Repackaging of the Google Maps web app related functionnalities to a separate plugin
-- Suppression of support for the JS Flash API, since it was limited anyway and has not been updated in a while.
+- Removed the tilers. They are now in a separately downloadable package.
+- Changed the Yahoo App Id
 
 ==TODO
 - Add more tests
