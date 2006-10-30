@@ -13,9 +13,7 @@ class TestLocalSearch< Test::Unit::TestCase
                               :state => "CA",
                               :zip => "95014",
                               :query => "chinese")
-    
     assert(! results.nil?)
-    
     results.each do |result|
       assert(!result.id.nil?)
       assert(!result.title.nil?)
@@ -34,9 +32,7 @@ class TestLocalSearch< Test::Unit::TestCase
       assert(!result.business_click_url.nil?)
       assert(!result.categories.nil?)
       assert(result.categories.is_a?(Array))
-
     end
-  
   end
 
   def test_no_query
@@ -59,4 +55,10 @@ class TestLocalSearch< Test::Unit::TestCase
     assert_equal(0,results.length)
     
   end
+
+  def test_ooo
+    results = LocalSearch::get(:query => 'Daily Grind', :city => 'Portland',:state  => 'OR')
+    assert(!results.nil?)
+  end
+
 end

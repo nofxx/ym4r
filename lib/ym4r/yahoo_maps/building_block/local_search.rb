@@ -41,71 +41,64 @@ module Ym4r
           url << "category=#{param[:category]}&" if param.has_key?(:category)
           url << "omit_category=#{param[:omit_category]}&" if param.has_key?(:omit_category)
           url << "minimum_rating=#{param[:minimum_rating]}&" if param.has_key?(:minimum_rating)
-          url << "output=json"
+          url << "output=xml"
           
           begin
-            json = open(URI.encode(url)).read
+            xml = open(URI.encode(url)).read
           rescue OpenURI::HTTPError => error
             raise BadRequestException.new(error.to_s)
           rescue 
             raise ConnectionException.new("Unable to connect to Yahoo! Maps  REST service")
           end
           
-          #see http://rubyforge.org/snippet/detail.php?type=snippet&id=29. Safe?
-          json_obj = eval(json.gsub(/(["'])\s*:\s*(['"0-9tfn\[{])/){"#{$1}=>#{$2}"})
-          
-          if json_obj.has_key?("Error")
-            raise RateLimitExceededException.new("Rate limit exceeded for Yahoo! Maps Traffic REST service")
+          doc = REXML::Document.new(xml) 
+
+          if doc.root.name == "Error"
+            raise RateLimitExceededException.new("Rate limit exceeded for Yahoo! Maps Geocoding service")
           else
-            json_result_set = json_obj['ResultSet']
-            
-            result_set = LocalSearch::ResultSet.new(json_result_set['ResultSetMapUrl'],
-                                                    json_result_set['totalResultsAvailable'].to_i,
-                                                    json_result_set['totalResultsReturned'].to_i,
-                                                    json_result_set['firstResultPosition'].to_i)
-            
-            unless json_result_set['Result'].nil?
-              json_results = [json_result_set['Result']].flatten #uniform processing in case there is only one result
+            doc_root = doc.root
+            result_set = LocalSearch::ResultSet.new(doc_root.elements['ResultSetMapUrl'].text,
+                                                    doc_root.attributes['totalResultsAvailable'].to_i,
+                                                    doc_root.attributes['totalResultsReturned'].to_i,
+                                                    doc_root.attributes['firstResultPosition'].to_i)
+            doc.elements.each("//Result") do |result|
+              data = result.elements
               
-              json_results.each do |json_result|
+              rating_data = data['Rating'].elements
+              if rating_data['AverageRating'].text != "NaN"
+                rating = LocalSearch::Rating.new(rating_data['AverageRating'].text.to_f, #when NaN, converted to 0 but can be tested (since TotalRating is 0 in this case) with is_rated? on the rating object
+                                                 rating_data['TotalRatings'].text.to_i,
+                                                 rating_data['TotalReviews'].text.to_i,
+                                                 Time.at(rating_data['LastReviewDate'].text.to_i),
+                                                 rating_data['LastReviewIntro'].text)
+              else
+                rating = LocalSearch::Rating.new(0,0,0,Time.at(0),"")
+              end
+
+              categories = []
+              data.each('//Category') do |category|
+                categories << LocalSearch::Category.new(category.attributes['id'].to_i,
+                                                        category.text)
+              end
               
-                #get the rating
-                json_rating = json_result['Rating']
-                rating = LocalSearch::Rating.new(json_rating['AverageRating'].to_f, #when NaN, converted to 0 but can be tested (since TotalRating is 0 in this case) with is_rated? on the rating object
-                                                 json_rating['TotalRatings'].to_i,
-                                                 json_rating['TotalReviews'].to_i,
-                                                 Time.at(json_rating['LastReviewDate'].to_i),
-                                                 json_rating['LastReviewIntro'])
-                
-                #get the categories
-                categories = []
-                unless json_result['Categories']['Category'].nil? #no category present in the result
-                  json_categories = [json_result['Categories']['Category']].flatten #uniform processing in case there is only one category
-                  json_categories.each do |json_category|
-                    categories << LocalSearch::Category.new(json_category['id'].to_i,
-                                                            json_category['content'])
-                  end
-                end
-                
-                result_set << LocalSearch::Result.new(json_result['id'].to_i,
-                                                      json_result['Title'],
-                                                      json_result['Address'],
-                                                      json_result['City'],
-                                                      json_result['State'],
-                                                      json_result['Phone'],
-                                                      json_result['Latitude'].to_f,
-                                                      json_result['Longitude'].to_f,
-                                                      rating,
-                                                      json_result['Distance'].to_f,
-                                                      json_result['Url'],
-                                                      json_result['ClickUrl'],
-                                                      json_result['MapUrl'],
-                                                      json_result['BusinessUrl'],
-                                                      json_result['BusinessClickUrl'],
-                                                      categories)
-                
-              end 
-            end #unless json_result_set['Result'].nil?
+              result_set << LocalSearch::Result.new(result.attributes['id'].to_i,
+                                                    data['Title'].text || "",
+                                                    data['Address'].text || "",
+                                                    data['City'].text || "",
+                                                    data['State'].text || "",
+                                                    data['Phone'].text || "",
+                                                    data['Latitude'].text.to_f,
+                                                    data['Longitude'].text.to_f,
+                                                    rating,
+                                                    data['Distance'].text.to_f,
+                                                    data['Url'].text || "",
+                                                    data['ClickUrl'].text || "",
+                                                    data['MapUrl'].text || "",
+                                                    data['BusinessUrl'].text || "",
+                                                    data['BusinessClickUrl'].text || "",
+                                                    categories)
+             
+            end
             
             result_set
             

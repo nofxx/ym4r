@@ -33,5 +33,6 @@ class TestGeocoding< Test::Unit::TestCase
   def test_no_location
     assert_raise(MissingParameterException) {Ym4r::YahooMaps::BuildingBlock::Geocoding::get(:hello => "world")}
   end
+
   
 end
