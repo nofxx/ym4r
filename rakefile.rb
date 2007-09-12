@@ -24,13 +24,13 @@ spec = Gem::Specification::new do |s|
   s.platform = Gem::Platform::RUBY
 
   s.name = 'ym4r'
-  s.version = "0.5.3"
+  s.version = "0.6.0"
   s.summary = "Helping the use of Google Maps and Yahoo! Maps API's from Ruby and Rails"
   s.description = <<EOF
 EOF
   s.author = 'Guilhem Vellut'
   s.email = 'guilhem.vellut+ym4r@gmail.com'
-  s.homepage = "http://thepochisuperstarmegashow.com"
+  s.homepage = "http://thepochisuperstarmegashow.com/projects/#ym4r"
   
   s.requirements << 'none'
   s.require_path = 'lib'

@@ -26,10 +26,6 @@ class TestGeocoding< Test::Unit::TestCase
     assert_equal(result1.longitude,result2.longitude)
   end
 
-  def test_garbage_location
-    assert_raise(BadRequestException) {Ym4r::YahooMaps::BuildingBlock::Geocoding::get(:location => "AZEAEAEAEAEAE")}
-  end
-
   def test_no_location
     assert_raise(MissingParameterException) {Ym4r::YahooMaps::BuildingBlock::Geocoding::get(:hello => "world")}
   end

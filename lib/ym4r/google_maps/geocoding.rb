@@ -30,13 +30,13 @@ module Ym4r
         placemarks = Placemarks.new(response.elements['name'].text,response.elements['Status/code'].text.to_i)
         response.elements.each("Placemark") do |placemark|
           data = placemark.elements
-          data_country = data['//CountryNameCode']
-          data_administrative = data['//AdministrativeAreaName']
-          data_sub_administrative = data['//SubAdministrativeAreaName']
-          data_locality = data['//LocalityName']
-          data_dependent_locality = data['//DependentLocalityName']
-          data_thoroughfare = data['//ThoroughfareName']
-          data_postal_code = data['//PostalCodeNumber']
+          data_country = data['descendant::CountryNameCode']
+          data_administrative = data['descendant::AdministrativeAreaName']
+          data_sub_administrative = data['descendant::SubAdministrativeAreaName']
+          data_locality = data['descendant::LocalityName']
+          data_dependent_locality = data['descendant::DependentLocalityName']
+          data_thoroughfare = data['descendant::ThoroughfareName']
+          data_postal_code = data['descendant::PostalCodeNumber']
           placemarks << Geocoding::Placemark.new(data['address'].text,
                                                  data_country.nil? ? "" : data_country.text,
                                                  data_administrative.nil? ? "" : data_administrative.text,
@@ -45,7 +45,7 @@ module Ym4r
                                                  data_dependent_locality.nil? ? "" : data_dependent_locality.text,
                                                  data_thoroughfare.nil? ? "" : data_thoroughfare.text,
                                                  data_postal_code.nil? ? "" : data_postal_code.text,
-                                                 *(data['//coordinates'].text.split(",")[0..1].collect {|l| l.to_f }))
+                                                 *(data['descendant::coordinates'].text.split(",")[0..1].collect {|l| l.to_f }))
         end
         placemarks
       end
